@@ -1,0 +1,775 @@
+
+/* Standard Linux headers */
+#include <stdio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <getopt.h>
+#include <unistd.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/ioctl.h>
+#include <sys/resource.h>
+#include <signal.h>
+#include <setjmp.h>
+#include <termios.h>
+#include <ptzctrl.h>
+#include "file_msg_drv.h"
+#include "sys_env_type.h"
+#define PTZCTRLPORT 18884
+volatile int PtzThreadQuit;
+static int serial_fd =  - 1;
+static int sockfd;
+int ptzGetCmdCtrl(int ptzModelNum, int ctrlCmd, int targetID, char *pBuf);
+unsigned int ptzGetBaudRate(unsigned int nBaud);
+unsigned int ptzGetDataBit(unsigned int nBit);
+
+void ptzDRX500CheckSum(char *pBuf);
+void ptzPelcoCheckSum(char *pBuf);
+
+//***************************SIGNAL PROCESS************************
+typedef void ptz_Sigfunc(int);
+static sigjmp_buf jmpbuf;
+static volatile sig_atomic_t can_jump;
+ptz_Sigfunc *ptz_vlSignalInstall(int signo, ptz_Sigfunc *func)
+{
+    struct sigaction act, oact;
+
+    act.sa_handler = func;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    if (signo == SIGALRM)
+    {
+        #ifdef SA_INTERRUPT
+        act.sa_flags |= SA_INTERRUPT; // SunOS 4.x
+        #endif
+    }
+    else
+    {
+        #ifdef SA_RESTART
+        act.sa_flags |= SA_RESTART; // SVR4, 4.4BSD
+        #endif
+    }
+    if (sigaction(signo, &act, &oact) < 0)
+    {
+        return (SIG_ERR);
+    }
+    return (oact.sa_handler);
+}
+
+void ptz_vl_Sigterm(int dummy)
+{
+    printf("ptz:caught SIGTERM: shutting down\n");
+    pthread_exit(0);
+}
+
+void ptz_vl_Sigint(int dummy)
+{
+    /*
+    if(can_jump==0){
+    return;
+    }
+    can_jump=0;*/
+    PTZCTRL_close();
+    PtzThreadQuit = 1;
+    alarm(1);
+    //siglongjmp(jmpbuf,1);
+}
+
+void ptz_vl_Sigsegv(int dummy)
+{
+    printf("ptz:caught SIGSEGV: shutting down\n");
+    pthread_exit(0);
+}
+
+void ptz_vl_Sigkill(int dummy)
+{
+    printf("ptz:caught SIGKILL: shutting down\n");
+    pthread_exit(0);
+}
+
+void ptz_SetupSignalRoutine()
+{
+    ptz_vlSignalInstall(SIGINT, ptz_vl_Sigint);
+    ptz_vlSignalInstall(SIGTERM, ptz_vl_Sigterm);
+    ptz_vlSignalInstall(SIGSEGV, ptz_vl_Sigsegv);
+    ptz_vlSignalInstall(SIGALRM, ptz_vl_Sigint);
+    ptz_vlSignalInstall(SIGKILL, ptz_vl_Sigkill);
+}
+
+//***************************SIGNAL PROCESS************************
+
+int ptzGetCmdCtrl(int ptzModelNum, int ctrlCmd, int targetID, char *pBuf)
+{
+    int ctrlSize = 0;
+
+    switch (ptzModelNum)
+    {
+        case PTZCTRL_DRX_500:
+            ctrlSize = 11;
+            pBuf[0] = 0x55;
+            pBuf[2] = targetID;
+            pBuf[9] = 0xaa;
+            switch (ctrlCmd)
+            {
+            case PAN_RIGHT:
+                pBuf[4] = 0x02;
+                pBuf[5] = 0xB0;
+                break;
+            case PAN_LEFT:
+                pBuf[4] = 0x04;
+                pBuf[5] = 0xB0;
+                break;
+            case TILT_UP:
+                pBuf[4] = 0x08;
+                pBuf[6] = 0xBF;
+                break;
+            case TILT_DOWN:
+                pBuf[4] = 0x10;
+                pBuf[6] = 0xBF;
+                break;
+            case ZOOM_IN:
+                pBuf[4] = 0x20;
+                pBuf[7] = 0x05;
+                break;
+            case ZOOM_OUT:
+                pBuf[4] = 0x40;
+                pBuf[7] = 0x05;
+                break;
+            case FOCUS_OUT:
+                pBuf[3] = 0x01;
+                pBuf[7] = 0x05;
+                break;
+            case FOCUS_IN:
+                pBuf[3] = 0x02;
+                pBuf[7] = 0x05;
+                break;
+
+            }
+
+            ptzDRX500CheckSum(pBuf);
+
+            break;
+        case PTZCTRL_PELCO_D:
+
+            ctrlSize = 7;
+            pBuf[0] = 0xFF;
+            pBuf[1] = targetID;
+            switch (ctrlCmd)
+            {
+            case PAN_RIGHT:
+                pBuf[3] = 0x02;
+                pBuf[4] = 0x1B;
+                break;
+            case PAN_LEFT:
+                pBuf[3] = 0x04;
+                pBuf[4] = 0x1B;
+                break;
+            case TILT_UP:
+                pBuf[3] = 0x08;
+                pBuf[5] = 0x1B;
+                break;
+            case TILT_DOWN:
+                pBuf[3] = 0x10;
+                pBuf[5] = 0x1B;
+                break;
+            case ZOOM_IN:
+                pBuf[3] = 0x20;
+                break;
+            case ZOOM_OUT:
+                pBuf[3] = 0x40;
+                break;
+            case FOCUS_OUT:
+                pBuf[3] = 0x80;
+                break;
+            case FOCUS_IN:
+                pBuf[2] = 0x01;
+                break;
+            case PTZ_ROUND:
+                pBuf[3] = 0x07;
+                pBuf[5] = 0x63;
+                break;
+            case RIGHT_UP:
+                pBuf[3] = 0x0A;
+                pBuf[4] = 0x1B;
+                pBuf[5] = 0x1B;
+                break;
+            case RIGHT_DOWN:
+                pBuf[3] = 0x12;
+                pBuf[4] = 0x1B;
+                pBuf[5] = 0x1B;
+                break;
+            case LEFT_UP:
+                pBuf[3] = 0x0C;
+                pBuf[4] = 0x1B;
+                pBuf[5] = 0x1B;
+                break;
+            case LEFT_DOWN:
+                pBuf[3] = 0x14;
+                pBuf[4] = 0x1B;
+                pBuf[5] = 0x1B;
+                break;
+            case LIGHTON:
+                pBuf[3] = 0x09;
+                pBuf[5] = 0x02;
+                break;
+            case LIGHTOFF:
+                pBuf[3] = 0x0B;
+                pBuf[5] = 0x02;
+                break;
+            case RAINON:
+                pBuf[3] = 0x09;
+                pBuf[5] = 0x01;
+                break;
+            case RAINOFF:
+                pBuf[3] = 0x0B;
+                pBuf[5] = 0x02;
+                break;
+            case APERTURE_OUT:
+                pBuf[2] = 0x04;
+                break;
+            case APERTURE_IN:
+                pBuf[2] = 0x02;
+                break;
+            }
+
+            ptzPelcoCheckSum(pBuf);
+            break;
+    }
+
+    return ctrlSize;
+}
+
+void ptzDRX500CheckSum(char *pBuf)
+{
+    int nSum = 0;
+    int nNum = 0;
+    int nCs = 0;
+
+    nSum = pBuf[0];
+    nSum += pBuf[1];
+    nSum += pBuf[2];
+    nSum += pBuf[3];
+    nSum += pBuf[4];
+    nSum += pBuf[5];
+    nSum += pBuf[6];
+    nSum += pBuf[7];
+    nSum += pBuf[8];
+    nSum += pBuf[9];
+
+    nNum = 0x2020 - nSum;
+
+    if (nNum &1)
+    {
+        nCs += 1;
+    }
+    if (nNum &2)
+    {
+        nCs += 2;
+    }
+    if (nNum &4)
+    {
+        nCs += 4;
+    }
+    if (nNum &8)
+    {
+        nCs += 8;
+    }
+    if (nNum &16)
+    {
+        nCs += 16;
+    }
+    if (nNum &32)
+    {
+        nCs += 32;
+    }
+    if (nNum &64)
+    {
+        nCs += 64;
+    }
+    if (nNum &128)
+    {
+        nCs += 128;
+    }
+
+    pBuf[10] = nCs;
+}
+
+void ptzPelcoCheckSum(char *pBuf)
+{
+    unsigned char bySum = 0;
+    bySum = pBuf[1];
+    bySum += pBuf[2];
+    bySum += pBuf[3];
+    bySum += pBuf[4];
+    bySum += pBuf[5];
+
+    pBuf[6] = bySum;
+}
+
+unsigned int ptzGetBaudRate(unsigned int nBaud)
+{
+    unsigned int nBaudRate;
+
+    switch (nBaud)
+    {
+        case 1200:
+            printf("===set baudrate B1200 ===\n");
+            nBaudRate = B1200;
+            break;
+        case 1800:
+            printf("===set baudrate B1800 ===\n");
+            nBaudRate = B1800;
+            break;
+        case 2400:
+            nBaudRate = B2400;
+            printf("===set baudrate B2400 ===\n");
+            break;
+        case 4800:
+            printf("===set baudrate B4800 ===\n");
+            nBaudRate = B4800;
+            break;
+        case 9600:
+            printf("===set baudrate B9600 ===\n");
+            nBaudRate = B9600;
+            break;
+        case 19200:
+            printf("===set baudrate B19200 ===\n");
+            nBaudRate = B19200;
+            break;
+        case 38400:
+            printf("===set baudrate B38400 ===\n");
+            nBaudRate = B38400;
+            break;
+        case 57600:
+            printf("===set baudrate B57600 ===\n");
+            nBaudRate = B57600;
+            break;
+        case 115200:
+            printf("===set baudrate B115200 ===\n");
+            nBaudRate = B115200;
+            break;
+        default:
+            printf("===set baudrate DEFAULT B9600 ===\n");
+            nBaudRate = B9600;
+            break;
+    }
+
+    return nBaudRate;
+}
+
+unsigned int ptzGetDataBit(unsigned int nBit)
+{
+    unsigned int nDataBit;
+
+    switch (nBit)
+    {
+        case 5:
+            printf("===set Databit CS5 ===\n");
+            nDataBit = CS5;
+            break;
+        case 6:
+            printf("===set Databit CS6 ===\n");
+            nDataBit = CS6;
+            break;
+        case 7:
+            printf("===set Databit CS7 ===\n");
+            nDataBit = CS7;
+            break;
+        case 8:
+            printf("===set Databit CS8 ===\n");
+            nDataBit = CS8;
+            break;
+        default:
+            printf("===set Databit DEFAULT CS8 ===\n");
+            nDataBit = CS8;
+            break;
+    }
+
+    return nDataBit;
+}
+
+int PTZCTRL_open()
+{
+    int status = 0;
+    PtzThreadQuit = 0;
+    /* insure a clean shutdown if user types ctrl-c */
+    /*
+    struct sigaction sigAction;
+    sigAction.sa_handler = signalHandler;
+    sigemptyset(&sigAction.sa_mask);
+    sigAction.sa_flags = 0;
+    sigaction(SIGINT, &sigAction, NULL);    
+     */
+    ptz_SetupSignalRoutine();
+
+    //pthread_detach(pthread_self());
+
+    serial_fd = open("/dev/ttyXM0", O_RDWR | O_NOCTTY | O_NONBLOCK);
+
+    if (serial_fd < 0)
+    {
+        printf("@@@@@@@@@@@@open device %s @@@@@@@@@@@@@@\n", "/dev/tts/0");
+        status =  - 1;
+    }
+
+    printf("@@@@@@@@@@@@@@@@ SERIAL OPEN fd : %d @@@@@@@@@@@@@@@\n", serial_fd);
+
+    return status;
+}
+
+int PTZCTRL_close()
+{
+    if (serial_fd >= 0)
+    {
+        close(serial_fd);
+    }
+    if (sockfd >= 0)
+    {
+        close(sockfd);
+    }
+    return 0;
+}
+
+
+int PTZCTRL_setInternalCtrl(int ptzIdx, int devnum, int ctrlCmd)
+{
+    char ptzBuf[25];
+    PTZ_serialInfo g_serialInfo;
+    struct termios oldtio, newtio;
+    int ptzCtrlSize;
+
+    //*********************************get the settings of ptzIdx
+    SysInfo *pSysInfo = GetSysInfo();
+    if (pSysInfo == NULL)
+    {
+        return  - 1;
+    }
+    g_serialInfo.ptzDatabit = pSysInfo->rs485_config[0][devnum].databit;
+    g_serialInfo.ptzParitybit = pSysInfo->rs485_config[0][devnum].parity;
+    g_serialInfo.ptzStopbit = pSysInfo->rs485_config[0][devnum].stopbit;
+    g_serialInfo.ptzBaudrate = pSysInfo->rs485_config[0][devnum].speed;
+    g_serialInfo.devaddr = pSysInfo->rs485_config[0][devnum].devaddr;
+    //**********************************
+    tcgetattr(serial_fd, &oldtio);
+
+    bzero(ptzBuf, 25);
+    bzero(&newtio, sizeof(newtio));
+
+    newtio.c_cflag = CLOCAL | CREAD;
+
+    newtio.c_cflag |= ptzGetBaudRate((unsigned int)g_serialInfo.ptzBaudrate);
+    newtio.c_cflag |= ptzGetDataBit((unsigned int)g_serialInfo.ptzDatabit);
+
+    //////////// parity bit /////////////////
+    if (g_serialInfo.ptzParitybit == INT_PARITY_EVEN)
+    {
+        printf("===set paritybit EVEN===\n");
+        newtio.c_cflag |= PARENB;
+    }
+    else if (g_serialInfo.ptzParitybit == INT_PARITY_ODD)
+    {
+        printf("===set paritybit ODD===\n");
+        newtio.c_cflag |= PARENB;
+        newtio.c_cflag |= PARODD;
+    }
+
+    //////////// stop bit //////////////
+    if (g_serialInfo.ptzStopbit == 2)
+    {
+        printf("===set stopbit 2 ===\n");
+        newtio.c_cflag |= CSTOPB;
+        newtio.c_cflag |= CSIZE;
+    }
+
+    newtio.c_iflag = IGNPAR | ICRNL;
+
+    newtio.c_oflag = 0;
+    newtio.c_lflag = ICANON;
+
+    newtio.c_cc[VTIME] = 0; /* inter-character timer unused */
+    newtio.c_cc[VMIN] = 1; /* blocking read until 1 character arrives */
+
+    tcflush(serial_fd, TCIFLUSH);
+    tcsetattr(serial_fd, TCSANOW, &newtio);
+
+    ptzCtrlSize = ptzGetCmdCtrl(ptzIdx, ctrlCmd, g_serialInfo.devaddr, ptzBuf);
+
+    if (ptzCtrlSize > 0)
+    {
+        int i;
+        for (i = 0; i < ptzCtrlSize; i++)
+        {
+            printf("%x\n", ptzBuf[i]);
+        }
+        write(serial_fd, (void*)ptzBuf, ptzCtrlSize);
+    }
+
+    return 0;
+}
+
+int PTZCTRL_ptzSendBypass(char *ptzBuf, int devnum, int bufSize)
+{
+    int sendSize;
+    PTZ_serialInfo g_serialInfo;
+    struct termios oldtio, newtio;
+    int ptzCtrlSize;
+
+    //*********************************get the settings of ptzIdx
+    SysInfo *pSysInfo = GetSysInfo();
+    if (pSysInfo == NULL)
+    {
+        return  - 1;
+    }
+    g_serialInfo.ptzDatabit = pSysInfo->rs485_config[0][devnum].databit;
+    g_serialInfo.ptzParitybit = pSysInfo->rs485_config[0][devnum].parity;
+    g_serialInfo.ptzStopbit = pSysInfo->rs485_config[0][devnum].stopbit;
+    g_serialInfo.ptzBaudrate = pSysInfo->rs485_config[0][devnum].speed;
+
+    //**********************************
+    tcgetattr(serial_fd, &oldtio);
+
+    bzero(&newtio, sizeof(newtio));
+
+    newtio.c_cflag = CLOCAL | CREAD;
+
+    newtio.c_cflag |= ptzGetBaudRate((unsigned short)g_serialInfo.ptzBaudrate);
+    newtio.c_cflag |= ptzGetDataBit((unsigned short)g_serialInfo.ptzDatabit);
+
+    //////////// parity bit /////////////////
+    if (g_serialInfo.ptzParitybit == INT_PARITY_EVEN)
+    {
+        printf("===set paritybit EVEN===\n");
+        newtio.c_cflag |= PARENB;
+    }
+    else if (g_serialInfo.ptzParitybit == INT_PARITY_ODD)
+    {
+        printf("===set paritybit ODD===\n");
+        newtio.c_cflag |= PARENB;
+        newtio.c_cflag |= PARODD;
+    }
+
+    //////////// stop bit //////////////
+    if (g_serialInfo.ptzStopbit == 2)
+    {
+        printf("===set stopbit 2 ===\n");
+        newtio.c_cflag |= CSTOPB;
+        newtio.c_cflag |= CSIZE;
+    }
+
+    newtio.c_iflag = IGNPAR | ICRNL;
+
+    newtio.c_oflag = 0;
+    newtio.c_lflag = ICANON;
+
+    newtio.c_cc[VTIME] = 0; /* inter-character timer unused */
+    newtio.c_cc[VMIN] = 1; /* blocking read until 1 character arrives */
+
+    tcflush(serial_fd, TCIFLUSH);
+    tcsetattr(serial_fd, TCSANOW, &newtio);
+
+    if (bufSize > 0)
+    {
+        ptzCtrlSize = bufSize + 1;
+
+        sendSize = write(serial_fd, (void*)ptzBuf, ptzCtrlSize);
+    }
+
+    return sendSize;
+}
+
+void *PTZCtrlThread(void *arg)
+{
+    struct sockaddr_in server_addr;
+    struct sockaddr_in client_addr;
+    int clientaddr_size, retval;
+    char DataBuffer[128];
+    char *username;
+    char *passwd;
+    char *channel;
+    char *cmd;
+    int i;
+    int status = PTZCTRL_open();
+    if (status < 0)
+    {
+        perror("PTZCTRL_open");
+        return ;
+    } if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) ==  - 1)
+    {
+        perror("socket");
+        return ;
+    }
+    bzero(&server_addr, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PTZCTRLPORT);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    if (bind(sockfd, (struct sockaddr*) &server_addr, sizeof(server_addr)) ==  - 1)
+    {
+        perror("bind");
+        return ;
+    }
+    while (!PtzThreadQuit)
+    {
+        /*
+        if(sigsetjmp(jmpbuf,1)){
+        can_jump=1;
+        break;
+        }
+        can_jump=1;*/
+        memset(DataBuffer, 0, sizeof(DataBuffer));
+        if (retval = recvfrom(sockfd, DataBuffer, 128, 0, (struct sockaddr*) &client_addr, &clientaddr_size) > 0)
+        {
+            #if DEBUG==0
+            printf("%s\n", DataBuffer);
+            #endif
+
+            username = strtok(DataBuffer, "|");
+            if (username == NULL)
+            {
+                continue;
+            }
+            passwd = strtok(NULL, "|");
+            if (passwd == NULL)
+            {
+                continue;
+            }
+            channel = strtok(NULL, "|");
+            if (channel == NULL)
+            {
+                continue;
+            }
+            cmd = strtok(NULL, "|");
+            if (cmd == NULL)
+            {
+                continue;
+            }
+            SysInfo *pSysInfo = GetSysInfo();
+            if (pSysInfo == NULL)
+            {
+                return  - 1;
+            }
+            for (i = 0; i < ACOUNT_NUM; i++)
+            {
+                if (strcmp(pSysInfo->acounts[i].user, username) == 0 && strcmp(pSysInfo->acounts[i].password, passwd) == 0)
+                {
+                    if (pSysInfo->acounts[i].authority <= 2)
+                    {
+                        if (strcmp(cmd, "rotate") == 0)
+                        //round
+                        {
+                            printf("rotate begin\n");
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), PTZ_ROUND);
+                            printf("rotate done\n");
+                        } if (strcmp(cmd, "left") == 0)
+                        //left
+                        {
+                            printf("left begin\n");
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), PAN_LEFT);
+                            printf("left done\n");
+                        }
+                        if (strcmp(cmd, "right") == 0)
+                        //right
+                        {
+                            printf("right begin\n");
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), PAN_RIGHT);
+                            printf("right done\n");
+                        }
+                        if (strcmp(cmd, "up") == 0)
+                        //up
+                        {
+                            printf("up begin\n");
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), TILT_UP);
+                            printf("up done\n");
+                        }
+                        if (strcmp(cmd, "down") == 0)
+                        //down
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), TILT_DOWN);
+                        }
+                        if (strcmp(cmd, "leftup") == 0)
+                        //leftup
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), LEFT_UP);
+                        }
+                        if (strcmp(cmd, "leftdown") == 0)
+                        //leftdown
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), LEFT_DOWN);
+                        }
+                        if (strcmp(cmd, "rightup") == 0)
+                        //rightup
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), RIGHT_UP);
+                        }
+                        if (strcmp(cmd, "rightdown") == 0)
+                        //rightdown
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), RIGHT_DOWN);
+                        }
+                        if (strcmp(cmd, "zoomin") == 0)
+                        //zoomin
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), ZOOM_IN);
+                        }
+                        if (strcmp(cmd, "zoomout") == 0)
+                        //zoomout
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), ZOOM_OUT);
+                        }
+                        if (strcmp(cmd, "focusin") == 0)
+                        //focusin
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), FOCUS_IN);
+                        }
+                        if (strcmp(cmd, "focusout") == 0)
+                        //focusout
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), FOCUS_OUT);
+                        }
+                        if (strcmp(cmd, "aperturein") == 0)
+                        //aperturein
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), FOCUS_IN);
+                        }
+                        if (strcmp(cmd, "apertureout") == 0)
+                        //apertureout
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), FOCUS_OUT);
+                        }
+
+                        if (strcmp(cmd, "lighton") == 0)
+                        //lighton
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), LIGHTON);
+                        }
+                        if (strcmp(cmd, "lightoff") == 0)
+                        //lightoff
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), LIGHTOFF);
+                        }
+                        if (strcmp(cmd, "rainon") == 0)
+                        //rainon
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), RAINON);
+                        }
+                        if (strcmp(cmd, "rainoff") == 0)
+                        //rainoff
+                        {
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), RAINOFF);
+                        }
+                        if (strcmp(cmd, "stop") == 0)
+                        //stop
+                        {
+                            printf("stop begin\n");
+                            PTZCTRL_setInternalCtrl(PTZCTRL_PELCO_D, atoi(channel), PTZ_STOP);
+                            printf("stop done\n");
+                        }
+                    }
+
+                }
+            }
+
+        }
+    }
+    PTZCTRL_close();
+}

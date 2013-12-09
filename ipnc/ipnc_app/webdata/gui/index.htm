@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>DM365IPNC</title>
+<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+
+<script type="text/javascript">
+	var currheight = -1;	
+	window.onresize = function(){
+		if(currheight != -1 && currheight != document.documentElement.clientHeight)
+		{
+			window.location.reload();
+		}
+		currheight = document.documentElement.clientHeight;
+	}	
+
+    var xmlHTTP;
+	var _0x225c=["\x69\x6E\x6E\x65\x72\x57\x69\x64\x74\x68","\x75\x6E\x64\x65\x66\x69\x6E\x65\x64","\x69\x6E\x6E\x65\x72\x48\x65\x69\x67\x68\x74","\x64\x6F\x63\x75\x6D\x65\x6E\x74\x45\x6C\x65\x6D\x65\x6E\x74","\x63\x6C\x69\x65\x6E\x74\x57\x69\x64\x74\x68","\x63\x6C\x69\x65\x6E\x74\x48\x65\x69\x67\x68\x74","\x62\x6F\x64\x79","\x77\x69\x64\x74\x68","\x68\x65\x69\x67\x68\x74"];var viewWidth;var viewHeight;if( typeof window[_0x225c[0x0]]!=_0x225c[0x1]){viewWidth=window[_0x225c[0x0]];viewHeight=window[_0x225c[0x2]];} else {if( typeof document[_0x225c[0x3]]!=_0x225c[0x1]&& typeof document[_0x225c[0x3]][_0x225c[0x4]]!=_0x225c[0x1]&&document[_0x225c[0x3]][_0x225c[0x4]]!=0x0){viewWidth=document[_0x225c[0x3]][_0x225c[0x4]];viewHeight=document[_0x225c[0x3]][_0x225c[0x5]];} else {viewWidth=document[_0x225c[0x6]][_0x225c[0x4]];viewHeight=document[_0x225c[0x6]][_0x225c[0x5]];} ;} ;function setObjectWidth(){if(viewWidth<0x3e8){viewWidth=0x3e8;} ;if(viewHeight<0x23a){viewHeight=0x23a;} ;GoDB[_0x225c[0x7]]=viewWidth-0xf;GoDB[_0x225c[0x8]]=viewHeight-0xf;} ;
+	function setObjectWidth(){
+		if (viewWidth<1024) {viewWidth=1024}
+		if (viewHeight<650) {viewHeight=650}
+		GoDB.width = viewWidth - 20
+		GoDB.height = viewHeight
+		GoDB.focus()		
+	}
+	
+	function openWin(sUrl){
+		var objWin = window.open(sUrl, "ipncpopup", "left=50, top=0, width=800, height=600, location=0, menubar=0, resizable=1, scrollbars=1, status=0, toolbar=0");
+		objWin.focus();
+	}
+	
+	function isIEBrowser(){
+		if(window.ActiveXObject)
+			return true;
+	}
+
+	function getXmlHttp(){
+		var xmlhttp=null;
+		var isIE = isIEBrowser();
+		if(isIE){
+			try{
+				xmlhttp=new ActiveXObject("Msxml2.XMLHTTP");
+			}
+			catch(e){
+				try{
+					xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				catch(e){};
+			}
+		}else{
+			xmlhttp=new XMLHttpRequest();
+			if(xmlhttp.overrideMimeType)
+			{
+				xmlhttp.overrideMimeType('text/xml');
+			}
+		}
+		return xmlhttp;
+	}
+	
+	function checkSDCard(){	
+		if(xmlHTTP!=null){
+			xmlHTTP.open("GET","vb.htm?paratest=sdinsert",true);
+			xmlHTTP.onreadystatechange = function(){
+                if (xmlHTTP.readyState == 4){	                
+                    var result = xmlHTTP.responseText;
+                    result = result.replace("OK sdinsert=3", "");
+                    result = result.replace("\r", "");
+                    result = result.replace("\n", "");
+                    result = result.replace(" ", "");
+                    if(result!=""){
+						sdlink.style.visibility = "hidden";
+                    }
+                    else{
+	                    sdlink.style.visibility = "visible";
+                    }
+                }
+            }
+			xmlHTTP.send(null);
+		}
+	}
+	
+	function initPage(){
+		setObjectWidth();
+		xmlHTTP = getXmlHttp();
+		//checkSDCard();
+		//setInterval("checkSDCard()", 5000);
+	}
+</script>
+</head>
+<body leftmargin=0 topmargin=0 marginwidth=0 marginheight=0 bgcolor=#000000 onload="initPage()">
+<table border=0 cellspacing=0 cellpadding=0>
+<!--<tr><td align=right height=10><SPAN id="sdlink"><a href="javascript:openWin('sdget.htm')" style="font-family: Verdana; font-size: 12px; font-weight: normal; color: #FFFFFF">SD Card Explorer</a></SPAN>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>-->
+<tr valign=middle align=center><td>
+<script type="text/javascript">
+document.write("<OBJECT ID=\"GoDB\" CLASSID=\"CLSID:4635CCA8-3D11-418B-8257-29CF0FE60069\" Width=1024 Height=600 codebase=\"/IPNCWebDlls.CAB#version=1,0,0,14\">")
+document.write("<PARAM NAME=\"BDBUrl\" VALUE=\"http://"+location.hostname+"/gIPNC-ro.gz\"></PARAM>")
+document.write("<SPAN style=\"font-family: Verdana; font-size: 9px; font-weight: normal; color: #FFFFFF\">The ActiveX control that displays the application has not been installed. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"#\" onclick=\"javascript:document.location.reload()\">Reload Page</a></SPAN></OBJECT>")
+</script>
+<OBJECT ID="gffx" CLASSID="CLSID:B2F190F0-1FA4-4D77-9ABD-1A054D23653D" Width=0 Height=0 codebase="/IPNCWebDlls.CAB#version=1,0,0,44"></OBJECT>
+</td></tr>
+</table>
+</body>
+</html>

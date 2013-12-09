@@ -1,0 +1,393 @@
+alias.o: alias.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+boa.o: boa.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ApproDrvMsg.h \
+  appro_api.h web_translate.h boa.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/share_mem.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_msg_drv.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h
+buffer.o: buffer.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+cgi.o: cgi.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+cgi_header.o: cgi_header.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+config.o: config.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h y.tab.h parse.h
+escape.o: escape.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+get.o: get.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h web_translate.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h
+hash.o: hash.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h parse.h
+ip.o: ip.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+log.o: log.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+mmap_cache.o: mmap_cache.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+pipe.o: pipe.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+queue.o: queue.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+read.o: read.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+request.o: request.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h iface.h tags.h appro_api.h
+response.o: response.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+select.o: select.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+signals.o: signals.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+util.o: util.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h
+sublog.o: sublog.c
+appro_api.o: appro_api.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h appro_api.h net_config.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  file_list.h para_list.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/system_default.h
+net_config.o: net_config.c net_config.h
+web_translate.o: web_translate.c file_list.h web_translate.h boa.h \
+  compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  net_config.h
+file_list.o: file_list.c web_translate.h boa.h compat.h config.h \
+  defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  net_config.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  file_list.h
+auth.o: auth.c boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h
+para_list.o: para_list.c web_translate.h boa.h compat.h config.h \
+  defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  net_config.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  file_list.h para_list.h
+syslog_list.o: syslog_list.c web_translate.h boa.h compat.h config.h \
+  defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  net_config.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  file_list.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/system_default.h
+accesslog_list.o: accesslog_list.c web_translate.h boa.h compat.h \
+  config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  net_config.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  file_list.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/system_default.h
+actvcon_list.o: actvcon_list.c web_translate.h boa.h compat.h config.h \
+  defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/file_msg_drv.h \
+  net_config.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  file_list.h
+tree.o: tree.c psia.h boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h defines.h
+psia_root.o: psia_root.c psia.h boa.h compat.h config.h defines.h \
+  globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  escape.h iface.h
+index.o: index.c psia.h boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  escape.h tags.h iface.h
+description.o: description.c psia.h boa.h compat.h config.h defines.h \
+  globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  escape.h tags.h iface.h
+xadd.o: xadd.c psia.h boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  escape.h
+xparse.o: xparse.c psia.h boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  escape.h
+iface.o: iface.c \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sys_env_type.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/plc.h net_config.h \
+  web_translate.h boa.h compat.h config.h defines.h globals.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Appro_interface.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Stream_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/File_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Sys_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/Alarm_Msg_Def.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/sysctrl_struct.h \
+  psia.h escape.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/ipnc_ver.h \
+  /root/myDVR/IPNC20130122/ipnc/ipnc_app/interface/inc/system_default.h \
+  file_list.h psia.h tags.h iface.h

@@ -1,0 +1,609 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <Msg_Def.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <share_mem.h>
+#include <pthread.h>
+#include <file_msg_drv.h>
+#include <alarm_msg_drv.h>
+#include <signal.h>
+
+#include <sys_env_type.h>
+#include <system_default.h>
+
+static int qid;
+static int mid;
+static int mFileId;
+static void *pFileShareMem;
+
+static int plcRun;
+static pthread_t pid_pthread_plc;
+
+/**
+ * @brief Initialize message queue.
+
+ * Initialize message queue.
+ * @note This API must be used before use any other message driver API.
+ * @param msgKey [I ] Key number for message queue and share memory.
+ * @return message ID.
+ */
+
+int Msg_Init(int msgKey)
+{
+    int qid;
+    key_t key = msgKey;
+
+    qid = msgget(key, 0);
+    
+    if (qid < 0)
+    {
+        qid = msgget(key, IPC_CREAT | 0666);
+
+        #if DEBUG==0
+        printf("Creat queue id:%d\n", qid);
+        #endif
+    }
+
+    #if DEBUG==0
+    printf("queue id:%d\n", qid);
+    #endif
+
+    return qid;
+}
+
+/**
+ * @brief Initialize pshared memory driver.
+
+ * Initialize pshared momory driver.
+ * @note The memory ID isn't saved to global variable.
+ * @return Memory ID
+ * @retval -1 Fail to initialize shared memory.
+ */
+int pShareMemInit(int key)
+{
+    mid = shmget(key, 0, 0);
+
+    if (mid < 0)
+    {
+	    mid = shmget(key, PROC_MEM_SIZE *MAX_SHARE_PROC, IPC_CREAT | 0660);
+
+	    #if DEBUG==0
+            printf("Create shared memory id:%d\n", mid);
+	    #endif
+    }
+
+    #if DEBUG==0
+    printf("shared memory size %d\n", PROC_MEM_SIZE *MAX_SHARE_PROC);
+    #endif
+
+    #if DEBUG==0
+    printf("shared memory id:%d\n", mid);
+    #endif
+
+    return mid;
+}
+
+/**
+ * @brief    check magic number
+ * @param    fp [I ]file pointer
+ * @return    error code : SUCCESS(0) or FAIL(-1)
+ */
+int check_magic_num(FILE *fp)
+{
+    int ret;
+    unsigned long MagicNum;
+    if (fread(&MagicNum, 1, sizeof(MagicNum), fp) != sizeof(MagicNum))
+    {
+        ret = FAIL;
+    }
+    else
+    {
+        if (MagicNum == MAGIC_NUM)
+        {
+            ret = SUCCESS;
+        }
+        else
+        {
+            ret = FAIL;
+        }
+    }
+    return ret;
+}
+
+/**
+ * @brief	Add new log event to tail
+ * @return	error code : SUCCESS(0) or FAIL(-1)
+ */
+int AddLogToTail(LogEntry_t *pLog)
+{
+	LogData_t *pLogData, *pTail = NULL;
+	DBG("pLog->tLogData.event=%s\n", pLog->event);
+	DBG("pLog->tLogData.time=%s\n", asctime(& pLog->time));
+	pLogData = (LogData_t*) malloc(sizeof(LogData_t));
+	if(pLogData == NULL){
+		DBG("No enough memory\n");
+		if(gLogHead == NULL)
+			return FAIL;
+		/* Do Nothing if no more memory */
+	} else {
+		memcpy(&pLogData->tLogData, pLog, sizeof(LogEntry_t));
+		pLogData->pNext = NULL;
+		if(gLogHead == NULL){
+			gLogHead = pLogData;
+		} else {
+			for(pTail = gLogHead;pTail->pNext != NULL;)
+				pTail = pTail->pNext;
+			pTail->pNext = pLogData;
+		}
+	}
+	return SUCCESS;
+}
+/**
+ * @brief	Add new log event
+ * @return	error code : SUCCESS(0) or FAIL(-1)
+ */
+int AddLog(LogEntry_t *pLog)
+{
+	LogData_t *pLogData, *pFrontData = NULL;
+	DBG("pLog->tLogData.event=%s\n", pLog->event);
+	DBG("pLog->tLogData.time=%s\n", asctime(& pLog->time));
+	pLogData = (LogData_t*) malloc(sizeof(LogData_t));
+	if(pLogData == NULL){
+		DBG("No enough memory\n");
+		if(gLogHead == NULL)
+			return FAIL;
+		/* If no more memory, replace the oldest one with current. */
+		pLogData = gLogHead;
+		while(pLogData->pNext != NULL){
+			pFrontData = pLogData;
+			pLogData = pLogData->pNext;
+		}
+		memcpy(&pLogData->tLogData, pLog, sizeof(LogEntry_t));
+		if(pFrontData != NULL){
+			pFrontData->pNext = NULL;
+			pLogData->pNext = gLogHead;
+			gLogHead = pLogData;
+		}
+	} else {
+		memcpy(&pLogData->tLogData, pLog, sizeof(LogEntry_t));
+		pLogData->pNext = gLogHead;
+		gLogHead = pLogData;
+	}
+	DBG("gLogHead->tLogData.event=%s\n", gLogHead->tLogData.event);
+	DBG("gLogHead->tLogData.time=%s\n", asctime(& gLogHead->tLogData.time));
+	return SUCCESS;
+}
+/**
+ * @brief	Show all system log
+ * @return
+ */
+void ShowAllLog()
+{
+	LogData_t *ptr;
+	for(ptr = gLogHead;ptr != NULL;ptr = ptr->pNext){
+		fprintf(stderr, "Event:%s\n", ptr->tLogData.event);
+		fprintf(stderr, "Time:%s\n", asctime(&ptr->tLogData.time));
+	}
+}
+/**
+ * @brief	Clean system log
+ * @return
+ */
+void CleanLog()
+{
+	LogData_t *ptr;
+	while(gLogHead != NULL){
+		ptr = gLogHead;
+		gLogHead = gLogHead->pNext;
+		free(ptr);
+	}
+}
+/**
+ * @brief	read log from log file
+ * @return	error code : SUCCESS(0) or FAIL(-1)
+ */
+int ReadLog()
+{
+	FILE *fp;
+	char Buffer[LOG_ENTRY_SIZE];
+	int ret = SUCCESS, count = 0;
+	if((fp = fopen(LOG_FILE, "rb")) == NULL){
+		/* log file not exist */
+		ret = FAIL;
+	} else {
+		if(check_magic_num(fp) == SUCCESS){
+			while(count < NUM_LOG_PER_PAGE * MAX_LOG_PAGE_NUM)
+				if(fread(Buffer, 1, LOG_ENTRY_SIZE,fp) != LOG_ENTRY_SIZE){
+					break;
+				} else {
+					if(AddLogToTail((LogEntry_t *)Buffer) != SUCCESS){
+						ret = FAIL;
+						break;
+					}
+					count++;
+				}
+		} else {
+			ret = FAIL;
+		}
+		fclose(fp);
+	}
+	return ret;
+}
+/**
+ * @brief	create log file
+ * @param	"int nPageNum" : [IN]log page number
+ * @param	"int nItemIndex" : [IN]log index in that page
+ * @return	LogEntry_t*: log data
+ */
+LogEntry_t* GetLog(int nPageNum, int nItemIndex)
+{
+	LogData_t* pLog;
+	int count, index = nPageNum * NUM_LOG_PER_PAGE + nItemIndex;
+	if(nPageNum < 0 || nItemIndex < 0)
+		return NULL;
+	for(count = 0, pLog = gLogHead;(count < index) && (pLog != NULL);count ++)
+		pLog = pLog->pNext;
+	return &pLog->tLogData;
+}
+/**
+ * @brief	create log file
+ * @param	name [I ]File name to create in nand.
+ * @param	pLogData  [I ]pointer to log list
+ * @return	error code : SUCCESS(0) or FAIL(-1)
+ */
+int create_log_file(char *name, LogData_t*pLogData)
+{
+	FILE *fp;
+	int ret, count = 0;
+	unsigned long MagicNum = MAGIC_NUM;
+	if((fp = fopen(name, "wb")) == NULL){
+		ERROR("Can't create log file\n");
+		ret = FAIL;
+	} else {
+		if(fwrite(&MagicNum, 1, sizeof(MagicNum), fp) != sizeof(MagicNum)){
+			ERROR("Writing Magic Number fail\n");
+			ret = FAIL;
+		} else {
+			ret = SUCCESS;
+			while(pLogData != NULL &&
+					count < NUM_LOG_PER_PAGE * MAX_LOG_PAGE_NUM)
+				if(fwrite(&pLogData->tLogData, 1, LOG_ENTRY_SIZE, fp) !=
+						LOG_ENTRY_SIZE){
+					ERROR("Writing log fail\n");
+					ret = FAIL;
+					break;
+				} else {
+					count++;
+					pLogData = pLogData->pNext;
+				}
+		}
+		fclose(fp);
+	}
+	return ret;
+}
+/**
+ * @brief    read SysInfo from system file
+ * @param    "void *Buffer" : [OUT]buffer to store SysInfo
+ * @return    error code : SUCCESS(0) or FAIL(-1)
+ */
+int ReadGlobal(void *Buffer)
+{
+    FILE *fp;
+    int ret;
+
+    if ((fp = fopen(SYS_FILE, "rb")) == NULL)
+    {
+        //printf("ReadGlobal ret == FAIL)\n");
+        /* System file not exist */
+        ret = FAIL;
+    }
+    else
+    {
+        if (check_magic_num(fp) == SUCCESS)
+        {
+            if (fread(Buffer, 1, SYS_ENV_SIZE, fp) != SYS_ENV_SIZE)
+            {
+                ret = FAIL;
+            }
+            else
+            {
+                ret = SUCCESS;
+            }
+    	}
+        else
+        {
+            ret = FAIL;
+        }
+        
+        fclose(fp);
+    }
+    return ret;
+}
+
+/**
+ * @brief    create system file
+ * @param    name [I ]File name to create in nand.
+ * @param    Global [I ]Pointer to System information
+ * @return    error code : SUCCESS(0) or FAIL(-1)
+ */
+int create_sys_file(char *name, void *Global)
+{
+    FILE *fp;
+    int ret;
+    unsigned long MagicNum = MAGIC_NUM;
+	
+    if ((fp = fopen(name, "wb")) == NULL)
+    {
+        perror("Can't create system file\n");
+        ret = FAIL;
+    }
+    else
+    {
+        if (fwrite(&MagicNum, 1, sizeof(MagicNum), fp) != sizeof(MagicNum))
+        {
+            perror("Writing Magic Number fail\n");
+            ret = FAIL;
+        }
+        else
+        {
+            if (fwrite(Global, 1, SYS_ENV_SIZE, fp) != SYS_ENV_SIZE)
+            {
+                perror("Writing global fail\n");
+                ret = FAIL;
+            }
+            else
+            {
+                ret = SUCCESS;
+            }
+        }
+        fclose(fp);
+    }
+    return ret;
+}
+
+/**
+ * @brief    file manager initialization
+ * @param    ShareMem [O ]Pointer to share memory where system information will
+be stored.
+ * @return    error code : SUCCESS(0) or FAIL(-1)
+ */
+int FileMngInit(void *ShareMem)
+{
+    int ret;
+
+    #if DEBUG==0
+    printf("FileMngInit\n");
+    #endif
+
+    #if DEBUG==0
+    printf("Global value size:%d\n", SYS_ENV_SIZE);
+    #endif
+
+    ret = ReadGlobal(ShareMem);
+    //printf("FileMngInit ret == %d)\n",FAIL);
+    if (ret == FAIL)
+    {
+        printf("FileMngInit ret == FAIL)\n");
+        ret = create_sys_file(SYS_FILE, &SysInfoDefault);
+        printf("create_sys_file Done!!!\n");
+        if (ret == SUCCESS)
+        {
+            printf("create_sys_file ret == SUCCESS!!!\n");
+            memcpy(ShareMem, &SysInfoDefault, SYS_ENV_SIZE);
+        }
+    }
+	
+    return ret;
+}
+
+/**
+* @brief Send quit command to file manager.
+
+* This command will make file manager stop running. After you called this, all
+*  the other process can't get system information because file manager is down.
+*/
+static void SendPlcQuitCmd(void)
+{
+	PLC_MSG_BUF msgbuf;
+
+	memset(&msgbuf, 0, sizeof(msgbuf));
+	msgbuf.Des = MSG_TYPE_MSG1;
+	msgbuf.src = 0;
+	msgbuf.cmd = PLC_MSG_QUIT;
+	msgsnd(qid, &msgbuf, sizeof(msgbuf)-sizeof(long), 0);/*send msg1*/
+}
+
+static void SendPlcRestartCmd(void)
+{
+	PLC_MSG_BUF msgbuf;
+
+	memset(&msgbuf, 0, sizeof(msgbuf));
+	msgbuf.Des = MSG_TYPE_MSG1;
+	msgbuf.src = 0;
+	msgbuf.cmd = PLC_MSG_RESTART;
+	msgsnd(qid, &msgbuf, sizeof(msgbuf)-sizeof(long), 0);/*send msg1*/
+}
+
+static void *pthread_plc(void *arg)
+{
+    int nread;
+    int plc_count=0;
+
+    printf("pthread_plc starting....\n");
+
+    while (plcRun) //Ñ­»·¶ÁÈ¡Êý\u0178Ý
+    {
+        printf("pthread_plc started, plc_count=%d.\n",plc_count++);
+    }
+	
+    printf("pthread_plc end\n");
+
+    return NULL;
+}
+
+/**
+ * @brief    thread processing message
+ * @param    none
+ * @retval    0
+ */
+static int ProcMsg(FILE_MSG_BUF* pMsg)
+{
+    int err;
+
+    switch(pMsg->cmd)
+    {
+        case PLC_MSG_QUIT:
+            plcRun=0;
+            pthread_join(pid_pthread_plc,NULL);
+
+            exit(0);
+        case PLC_MSG_RESTART:
+            plcRun=0;
+            pthread_join(pid_pthread_plc,NULL);
+            
+            plcRun = 1;
+
+            err = pthread_create(&pid_pthread_plc, NULL,pthread_plc, NULL);
+
+            if(err != 0)
+            {
+                printf("create thread_recv fail: %s\n", strerror(err));
+                exit(-1);
+            }
+            break;
+    }
+
+    return 1;
+}
+
+
+
+/**
+ * @brief    thread processing message
+ * @param    none
+ * @retval    0
+ */
+static int plcMsgProc(void)
+{
+    PLC_MSG_BUF msgbuf;
+    int msg_size, e_count = 0;
+
+    while (1)
+    {
+        msg_size = msgrcv(qid, &msgbuf, sizeof(msgbuf) - sizeof(long), MSG_TYPE_MSG1, 0);
+
+        #if DEBUG==0
+        printf("IEC104 Recieved message:%d from %d\n", msgbuf.cmd, msgbuf.src);
+        #endif
+
+        if (msg_size < 0)
+        {
+            perror("Receive msg fail \n");
+
+            if (e_count++ >= 3)
+            {
+                /* Kill message queue and init angain */
+                perror("msgrcv ERROR");
+
+                msgctl( qid, IPC_RMID, NULL);
+
+                qid = Msg_Init(IEC104_MSG_KEY);
+            }
+        }
+        else if (msgbuf.src == MSG_TYPE_MSG1 || msgbuf.src < 0)
+        {
+            perror("Got Error message\n");
+
+            plcRun = 0;
+        }
+        else
+        {
+            e_count = 0;
+
+            if (ProcMsg(&msgbuf) == 1) /* Message has been processed */
+            {
+                #if DEBUG==0
+                printf("Message process success\n");
+                #endif
+
+                if (msgbuf.src != 0)
+                {
+                    msgbuf.Des = msgbuf.src;
+                    msgbuf.src = MSG_TYPE_MSG1;
+                    msgsnd(qid, &msgbuf, sizeof(msgbuf) - sizeof(long), 0);
+                }
+            }
+        }
+    }
+}
+
+int main(int argc, char **argv)
+{
+    int err;
+
+    if(create_log_file(PLC_LOG_FILE, NULL)==FAIL)
+    {
+        printf("Create PLC log file %s fail: %s\n",PLC_LOG_FILE,strerror(err));
+
+        exit(-1);
+    }
+        
+
+    #if DEBUG==0
+    printf("plc START......\n");
+    #endif
+    
+    qid = Msg_Init(PLC_MSG_KEY);
+    if(qid<0)
+    {
+        return -1;
+    }
+
+    mFileId = pShareMemInit(FILE_MSG_KEY);
+    if (mFileId < 0)
+    {
+        return  - 1;
+    }
+
+    #if DEBUG==0
+    printf("%s:mFileId=%d\n", __func__, mFileId);
+    #endif
+
+    pFileShareMem = shmat(mFileId, 0, 0);
+
+    #if DEBUG==0
+    printf("%s:Share Memory Addr=%p\n", __func__, pFileShareMem);
+    #endif
+
+    if(FileMngInit(pFileShareMem) != 0)
+    {
+    	return -1;
+    }
+
+    #if DEBUG==0
+    {
+        SysInfo *sysInfoP;
+
+        sysInfoP=pFileShareMem;
+        
+        printf("admin user:=%s, passwd=%s,authority=%d\n",sysInfoP->acounts[0].user,sysInfoP->acounts[0].password,sysInfoP->acounts[0].authority);
+    }
+    #endif
+
+    plcRun = 1;
+
+    err = pthread_create(&pid_pthread_plc, NULL,pthread_plc, NULL);
+
+    if(err != 0)
+    {
+        printf("create thread_plc fail: %s\n", strerror(err));
+        exit(-1);
+    }
+
+    plcMsgProc();
+}
+
