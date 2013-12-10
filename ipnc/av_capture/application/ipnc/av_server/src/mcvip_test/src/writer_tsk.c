@@ -1,0 +1,385 @@
+#include <writer_priv.h>
+
+#define FILE_WRITE_BASE_DIR   "./"
+
+WRITER_Ctrl gWRITER_ctrl;
+
+int WRITER_tskCreate( WRITER_CreatePrm *prm)
+{
+  int status, i;
+  
+  status = OSA_mutexCreate(&gWRITER_ctrl.mutexLock);
+  if(status!=OSA_SOK) {
+    OSA_ERROR("OSA_mutexCreate()\n");
+  }
+  
+  memcpy(&gWRITER_ctrl.createPrm, prm, sizeof(gWRITER_ctrl.createPrm));
+  
+  gWRITER_ctrl.bufNum = prm->numCh*WRITER_MIN_IN_BUF_PER_CH;
+  
+  gWRITER_ctrl.bufSize = (OSA_align(prm->frameWidth, 32)*prm->frameHeight*3)/2;
+  gWRITER_ctrl.bufSize = OSA_align(gWRITER_ctrl.bufSize, 32);
+  
+  gWRITER_ctrl.bufVirtAddr = OSA_cmemAlloc(gWRITER_ctrl.bufSize*gWRITER_ctrl.bufNum, 32);
+  gWRITER_ctrl.bufPhysAddr = OSA_cmemGetPhysAddr(gWRITER_ctrl.bufVirtAddr);
+  
+  if(gWRITER_ctrl.bufVirtAddr==NULL||gWRITER_ctrl.bufPhysAddr==NULL) {
+    OSA_ERROR("OSA_cmemAlloc()\n");
+    goto error_exit;
+  }
+
+  gWRITER_ctrl.bufCreate.numBuf = gWRITER_ctrl.bufNum;
+  for(i=0; i<gWRITER_ctrl.bufNum; i++) {
+    gWRITER_ctrl.bufCreate.bufPhysAddr[i] = gWRITER_ctrl.bufPhysAddr + i*gWRITER_ctrl.bufSize;
+    gWRITER_ctrl.bufCreate.bufVirtAddr[i] = gWRITER_ctrl.bufVirtAddr + i*gWRITER_ctrl.bufSize;    
+  }
+
+  status = OSA_bufCreate(&gWRITER_ctrl.bufHndl, &gWRITER_ctrl.bufCreate);
+  if(status!=OSA_SOK) {
+    OSA_ERROR("OSA_bufCreate()\n");
+    goto error_exit;
+  }
+  
+  for(i=0; i<prm->numCh; i++) {
+      
+    gWRITER_ctrl.chInfo[i].enableChSave = FALSE;
+  }
+
+  return OSA_SOK;
+  
+error_exit:
+
+  OSA_mutexDelete(&gWRITER_ctrl.mutexLock);
+  
+  if(gWRITER_ctrl.bufVirtAddr) {
+    OSA_cmemFree(gWRITER_ctrl.bufVirtAddr);
+    
+    OSA_bufDelete(&gWRITER_ctrl.bufHndl);
+  }
+
+  return OSA_EFAIL;  
+}
+
+int WRITER_tskDelete()
+{
+  int status;
+  
+  WRITER_fileSaveExit();
+
+  OSA_mutexDelete(&gWRITER_ctrl.mutexLock);
+  
+  if(gWRITER_ctrl.bufVirtAddr) {
+    OSA_cmemFree(gWRITER_ctrl.bufVirtAddr);
+    
+    OSA_bufDelete(&gWRITER_ctrl.bufHndl);
+  }
+    
+  return status;
+}
+
+int WRITER_tskRun()
+{
+  int status=OSA_SOK, inBufId, chId;
+  OSA_BufInfo *pInBuf;
+  Bool isKeyFrame;
+      
+  status = OSA_bufGetFull(&gWRITER_ctrl.bufHndl, &inBufId, OSA_TIMEOUT_FOREVER);
+  
+  if(status==OSA_SOK) {
+    
+    pInBuf = OSA_bufGetBufInfo(&gWRITER_ctrl.bufHndl, inBufId);
+    OSA_assert(pInBuf!=NULL);
+    
+    chId = pInBuf->flags;
+    isKeyFrame = pInBuf->count;
+    
+    // frameSize = pInBuf->size
+    // frame addr = pInBuf->virtAddr
+    // timestamp = pInBuf->timestamp
+        
+    if(chId >= 0 && chId < gWRITER_ctrl.createPrm.numCh) {
+      
+      // save to file
+      WRITER_fileSaveRun(chId, isKeyFrame, pInBuf);          
+
+      // stream over network, ...
+    }  
+    
+    OSA_bufPutEmpty(&gWRITER_ctrl.bufHndl, inBufId);
+  }
+  
+  return status;
+}
+
+int WRITER_tskMain(struct OSA_TskHndl *pTsk, OSA_MsgHndl *pMsg, Uint32 curState )
+{
+  int status;
+  Bool done = FALSE, ackMsg=FALSE;;
+  Uint16 cmd = OSA_msgGetCmd(pMsg);
+  WRITER_CreatePrm *pCreatePrm = (WRITER_CreatePrm*)OSA_msgGetPrm(pMsg);
+  
+  if( cmd != WRITER_CMD_CREATE || pCreatePrm==NULL) {
+    OSA_tskAckOrFreeMsg(pMsg, OSA_EFAIL);
+    return OSA_SOK;
+  }
+  
+  status = WRITER_tskCreate( pCreatePrm );
+  
+  OSA_tskAckOrFreeMsg(pMsg, status);  
+  
+  if(status != OSA_SOK)
+    return OSA_SOK;
+  
+  while(!done)
+  {
+    status = OSA_tskWaitMsg(pTsk, &pMsg);
+    if(status != OSA_SOK) {
+      done = TRUE;
+      break;
+    }
+      
+    cmd = OSA_msgGetCmd(pMsg);  
+    
+    switch(cmd) {
+      case WRITER_CMD_RUN:
+        OSA_tskAckOrFreeMsg(pMsg, OSA_SOK);      
+        WRITER_tskRun();      
+        break;
+        
+      case WRITER_CMD_DELETE:
+        done = TRUE;        
+        ackMsg = TRUE;
+        break;   
+                   
+      default:   
+        OSA_tskAckOrFreeMsg(pMsg, OSA_SOK);
+        break;              
+    }
+  }
+
+  WRITER_tskDelete();
+  if(ackMsg)
+    OSA_tskAckOrFreeMsg(pMsg, OSA_SOK);          
+
+  return OSA_SOK;
+}
+
+
+int WRITER_sendCmd(Uint16 cmd, void *prm, Uint16 flags )
+{
+  return OSA_mbxSendMsg(&gWRITER_ctrl.tskHndl.mbxHndl, &gWRITER_ctrl.mbxHndl, cmd, prm, flags);
+}
+
+int WRITER_create(WRITER_CreatePrm *prm)
+{
+  int status;
+ 
+  memset(&gWRITER_ctrl, 0, sizeof(gWRITER_ctrl));
+   
+  status = OSA_tskCreate( &gWRITER_ctrl.tskHndl, WRITER_tskMain, WRITER_THR_PRI, WRITER_STACK_SIZE, 0);
+
+  OSA_assertSuccess(status);
+    
+  status = OSA_mbxCreate( &gWRITER_ctrl.mbxHndl);  
+  
+  OSA_assertSuccess(status);  
+
+  status = WRITER_sendCmd(WRITER_CMD_CREATE, prm, OSA_MBX_WAIT_ACK );
+  
+  return status;  
+}
+
+int WRITER_delete()
+{
+  int status;
+  
+  status = WRITER_sendCmd(WRITER_CMD_DELETE, NULL, OSA_MBX_WAIT_ACK );
+  
+  status = OSA_tskDelete( &gWRITER_ctrl.tskHndl );
+
+  OSA_assertSuccess(status);
+    
+  status = OSA_mbxDelete( &gWRITER_ctrl.mbxHndl);  
+  
+  OSA_assertSuccess(status);  
+  
+  return status;
+}
+
+OSA_BufInfo *WRITER_getEmptyBuf(int *bufId, int timeout)
+{
+  int status;
+    
+  status = OSA_bufGetEmpty(&gWRITER_ctrl.bufHndl, bufId, timeout);
+  if(status!=OSA_SOK)
+    return NULL;
+
+  return OSA_bufGetBufInfo(&gWRITER_ctrl.bufHndl, *bufId);
+}
+
+int WRITER_putFullBuf(int chId, OSA_BufInfo *buf, int bufId)
+{
+  buf->flags = chId;
+    
+  OSA_bufPutFull(&gWRITER_ctrl.bufHndl, bufId);
+    
+  WRITER_sendCmd(WRITER_CMD_RUN, NULL, 0);
+
+  return OSA_SOK;
+}
+
+int WRITER_enableChSave(int chId, Bool enable)
+{
+  if(chId >= 0 && chId < gWRITER_ctrl.createPrm.numCh) {
+    gWRITER_ctrl.chInfo[chId].enableChSave = enable;
+  }
+
+  return OSA_SOK;
+}
+
+int WRITER_fileSaveRun(int chId, Bool isKeyFrame, OSA_BufInfo *pBufInfo)
+{
+  Bool saveToFile;
+  int  fileSaveState;
+  int  status=OSA_SOK, writtenBytes;
+  WRITER_ChInfo *pChInfo;
+  
+  static char filename[256];  
+    
+  pChInfo = &gWRITER_ctrl.chInfo[chId];
+
+  fileSaveState = pChInfo->fileSaveState;
+  
+  saveToFile = pChInfo->enableChSave;
+  
+  #ifdef WRITER_DEBUG_RUNNING
+  OSA_printf(" WRITER: Ch %d, saveToFile = %d, fileSaveState = %d, frame size = %d, key frame = %d\n", 
+          chId, saveToFile, fileSaveState, pBufInfo->size, isKeyFrame);
+  #endif
+  
+  if(saveToFile) {
+  
+    if(fileSaveState==WRITER_FILE_SAVE_STATE_IDLE)
+      fileSaveState=WRITER_FILE_SAVE_STATE_OPEN;
+  
+  } else {
+
+    if(fileSaveState==WRITER_FILE_SAVE_STATE_OPEN)
+      fileSaveState=WRITER_FILE_SAVE_STATE_IDLE;
+    else
+    if(fileSaveState==WRITER_FILE_SAVE_STATE_WRITE)
+      fileSaveState=WRITER_FILE_SAVE_STATE_CLOSE;
+  }
+  
+  if(fileSaveState==WRITER_FILE_SAVE_STATE_OPEN) {
+    if(isKeyFrame) {
+
+      sprintf(filename, "%s/CH%02d_%04d_%dx%d.bits", 
+                FILE_WRITE_BASE_DIR,
+                chId, 
+                pChInfo->fileSaveIndex,                
+                gWRITER_ctrl.createPrm.frameWidth,
+                gWRITER_ctrl.createPrm.frameHeight                
+            );
+
+      #ifdef WRITER_DEBUG
+      OSA_printf(" WRITER: Opening file stream %d, %s\n", chId, filename);
+      #endif  
+      
+      pChInfo->fileSaveHndl = fopen( filename, "wb");
+              
+      if(   pChInfo->fileSaveHndl == NULL 
+        ) { 
+        #ifdef WRITER_DEBUG            
+        OSA_ERROR("Ch %d open\n", chId);    
+        #endif         
+        fileSaveState = WRITER_FILE_SAVE_STATE_IDLE;
+        
+        fclose(pChInfo->fileSaveHndl);
+        
+      } else {
+        fileSaveState = WRITER_FILE_SAVE_STATE_WRITE;
+        pChInfo->fileSaveIndex++;
+      }
+    }
+  }
+  
+  if(fileSaveState==WRITER_FILE_SAVE_STATE_WRITE) {  
+    if(pBufInfo->size>0) {
+    
+      #ifdef WRITER_DEBUG_RUNNING
+      OSA_printf(" WRITER: Stream %d writing %d bytes\n", chId, pBufInfo->size);
+      #endif      
+      
+      OSA_prfBegin(&gWRITER_ctrl.prfFileWr);
+      
+      writtenBytes = fwrite(pBufInfo->virtAddr, 
+                      1, 
+                      pBufInfo->size, 
+                      pChInfo->fileSaveHndl
+                      );
+                      
+      OSA_prfEnd(&gWRITER_ctrl.prfFileWr, 1);
+                            
+      if(writtenBytes!=pBufInfo->size) {
+        #ifdef WRITER_DEBUG      
+        OSA_ERROR("Ch %d write\n", chId);
+        #endif
+        pChInfo->enableChSave = FALSE;
+        fileSaveState=WRITER_FILE_SAVE_STATE_CLOSE;
+      }
+    }
+  }
+  if(fileSaveState==WRITER_FILE_SAVE_STATE_CLOSE) {   
+  
+    #ifdef WRITER_DEBUG
+    OSA_printf(" WRITER: Closing file stream %d\n", chId);
+    #endif   
+    
+    OSA_prfBegin(&gWRITER_ctrl.prfFileWr);
+    fclose(pChInfo->fileSaveHndl);
+    OSA_prfEnd(&gWRITER_ctrl.prfFileWr, 1);
+    
+    fileSaveState=WRITER_FILE_SAVE_STATE_IDLE;
+    
+    #ifdef WRITER_DEBUG
+    OSA_printf(" WRITER: Closing file stream ... DONE\n");
+    #endif  
+  }
+    
+  pChInfo->fileSaveState = fileSaveState; 
+
+  return status;
+}
+
+int WRITER_fileSaveExit()
+{
+  int  i;
+  WRITER_ChInfo *pChInfo;
+
+  for(i=0; i<gWRITER_ctrl.createPrm.numCh; i++) {  
+  
+    pChInfo = &gWRITER_ctrl.chInfo[i];
+
+    if(pChInfo->fileSaveState==WRITER_FILE_SAVE_STATE_WRITE) {
+
+      #ifdef WRITER_DEBUG
+      OSA_printf(" WRITER: Closing file stream %d\n", i);
+      #endif  
+
+      OSA_prfBegin(&gWRITER_ctrl.prfFileWr);
+      fclose(pChInfo->fileSaveHndl);
+      OSA_prfEnd(&gWRITER_ctrl.prfFileWr, 1);
+      
+      #ifdef WRITER_DEBUG
+      OSA_printf(" WRITER: Closing file stream ... DONE\n");
+      #endif  
+      
+    }
+      
+    pChInfo->fileSaveState = WRITER_FILE_SAVE_STATE_IDLE;    
+  }
+
+  return OSA_SOK;
+}
+

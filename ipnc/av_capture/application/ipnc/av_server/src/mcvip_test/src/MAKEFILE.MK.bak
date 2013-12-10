@@ -1,0 +1,20 @@
+
+include $(BASE_DIR)/COMMON_HEADER.MK
+
+ifeq ($(SYSTEM), EVM)
+IMAGE_TUNE_LIB := $(LIB_DIR)/image_tune.a
+endif
+ifeq ($(SYSTEM), DVR)
+IMAGE_TUNE_LIB := $(LIB_DIR)/image_tune.a
+endif
+LIBS=$(LIB_DIR)/mcvip_test.a $(LIB_DIR)/mcvip.a $(LIB_DIR)/alg.a $(LIB_DIR)/drv.a $(IMAGE_TUNE_LIB) $(LIB_DIR)/osa.a $(CMEM_LIB) $(LIB_DIR)/csl.a
+LIBS+=$(CODEC_LIBS)
+
+INCLUDE+=$(ALG_INC)
+INCLUDE+=$(MCVIP_INC)
+INCLUDE+=$(DRV_INC)
+INCLUDE+=$(CSL_INC)
+
+include $(BASE_DIR)/COMMON_FOOTER.MK
+
+

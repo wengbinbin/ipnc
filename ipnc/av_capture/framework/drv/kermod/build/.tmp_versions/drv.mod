@@ -1,0 +1,2 @@
+/root/myDVR/IPNC20130122/ipnc/av_capture/framework/drv/kermod/build/drv.ko
+/root/myDVR/IPNC20130122/ipnc/av_capture/framework/drv/kermod/build/../src/dev_drv.o /root/myDVR/IPNC20130122/ipnc/av_capture/framework/drv/kermod/build/../src/dev_i2c.o /root/myDVR/IPNC20130122/ipnc/av_capture/framework/drv/kermod/build/../src/dev_dma.o /root/myDVR/IPNC20130122/ipnc/av_capture/framework/drv/kermod/build/../src/dev_dmaCopyFill.o /root/myDVR/IPNC20130122/ipnc/av_capture/framework/drv/kermod/build/../src/dev_dmaDemux.o
