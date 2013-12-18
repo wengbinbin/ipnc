@@ -4840,6 +4840,9 @@ static int get_presetnotes(request *req, COMMAND_ARGUMENT *argm)
     return 0;
 }
 
+
+ //get_scheduleinfiniteenable 
+
 /***************************************************************************
  *                                                                         *
  ***************************************************************************/
@@ -5184,6 +5187,10 @@ HTTP_OPTION HttpOptionTable [] =
     { "scheduleinfiniteenable"  , set_scheduleinfiniteenable 	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
 	{ "schedule"				, set_schedule					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
 	{ "delschedule"		    	, del_schedule					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+//add by wbb
+//       { "getscheduleinfiniteenable"  , get_scheduleinfiniteenable 	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+
+
 
 	/*      MAINTAINENCE SCREEN			*/
 

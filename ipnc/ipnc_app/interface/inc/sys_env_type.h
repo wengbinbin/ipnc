@@ -483,6 +483,9 @@ typedef struct
 #define PTZ_STREAMCTRL_HARD 1
 #define PTZ_STREAMCTRL_SOFT 2
 
+#define NOTENUMB 21
+#define MAXNOTELENGTH 128
+
 typedef struct
 {
     __u8 ptzName[32];
@@ -499,7 +502,7 @@ typedef struct
     __u32 parity;//0 1 2
     __u32 streamctrl;//0 |1 |2 
 
-    __u8 note[21][128];   //set 20 preseting points;every point can support 20 __u8
+    __u8 note[NOTENUMB][MAXNOTELENGTH];   //  add by wbb 20 preseting points;every point can support 20 __u8
     
 } Ptz_Channel_Data;
 

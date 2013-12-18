@@ -514,7 +514,8 @@ static char *DevNameTab[]=
     "/dev/ttyXM0",
     "/dev/ttyXM1"
 };
-int PTZCTRL_setInternalpresetCtrl(int Chl, int ctrlCmd,int npreset)
+
+int PTZCTRL_setInternalCtrl(int Chl, int ctrlCmd,int npreset)
 {
     int devNo;
     int fd;
@@ -523,20 +524,12 @@ int PTZCTRL_setInternalpresetCtrl(int Chl, int ctrlCmd,int npreset)
     PTZ_serialInfo g_serialInfo;
     int ptzCtrlSize;
 
-    #if DEBUG==1025
-    printf("Chl=%d, ctrlCmd=%d,npreset=%d\n",Chl,ctrlCmd,npreset);
-    #endif
-
     SysInfo *pSysInfo = GetSysInfo();
     if (pSysInfo == NULL)
     {
         return  - 1;
     }
 
-    #if DEBUG==1025
-    printf("devNo= %d, %d, %d, %d\n",pSysInfo->ptz_channel[0].dev_no,pSysInfo->ptz_channel[1].dev_no,pSysInfo->ptz_channel[2].dev_no,pSysInfo->ptz_channel[3].dev_no);
-    #endif
-    
     devNo=pSysInfo->ptz_channel[Chl].dev_no;
     
     if(devNo==DEV_NO_NONE)
@@ -548,9 +541,6 @@ int PTZCTRL_setInternalpresetCtrl(int Chl, int ctrlCmd,int npreset)
         return -1;
     }
 
-    #if DEBUG==1023
-    printf("devNo=%d, devName=%s\n",devNo,DevNameTab[pSysInfo->ptz_channel[Chl].dev_no]);
-    #endif
     
     fd=open(DevNameTab[pSysInfo->ptz_channel[Chl].dev_no], O_RDWR | O_NOCTTY | O_NONBLOCK);
 
@@ -569,10 +559,7 @@ int PTZCTRL_setInternalpresetCtrl(int Chl, int ctrlCmd,int npreset)
     g_serialInfo.ptzStopbit = pSysInfo->ptz_channel[Chl].stopbit;
     g_serialInfo.ptzBaudrate = pSysInfo->ptz_channel[Chl].speed;
 
-    #if DEBUG==1025
-    printf("data=%d, parity=%d, stop=%d, baud=%d, addr=%d\n",g_serialInfo.ptzDatabit,g_serialInfo.ptzParitybit,g_serialInfo.ptzStopbit,g_serialInfo.ptzBaudrate,g_serialInfo.devaddr);
-    #endif
-
+  
     tcgetattr(fd, &oldtio);
 
     bzero(&newtio, sizeof(newtio));
@@ -624,137 +611,6 @@ int PTZCTRL_setInternalpresetCtrl(int Chl, int ctrlCmd,int npreset)
     bzero(ptzBuf, 25);
 
     ptzCtrlSize = ptzGetCmdCtrl(pSysInfo->ptz_channel[Chl].protocol, ctrlCmd, npreset, g_serialInfo.devaddr, ptzBuf);
-
-    if (ptzCtrlSize > 0)
-    {
-        #if DEBUG==1023
-        {
-            int i;
-        
-            for (i = 0; i < ptzCtrlSize; i++)
-            {
-                printf("%x ", ptzBuf[i]);
-            }
-            printf("\n");
-        }
-        #endif
-
-        write(fd, (void*)ptzBuf, ptzCtrlSize);
-        close(fd);
-    }
-
-    return 0;
-}
-int PTZCTRL_setInternalCtrl(int Chl, int ctrlCmd)
-{
-    int devNo;
-    int fd;
-    struct termios oldtio, newtio;
-    char ptzBuf[64];
-    PTZ_serialInfo g_serialInfo;
-    int ptzCtrlSize;
-
-    #if DEBUG==1025
-    printf("Chl=%d, ctrlCmd=%d\n",Chl,ctrlCmd);
-    #endif
-
-    SysInfo *pSysInfo = GetSysInfo();
-    if (pSysInfo == NULL)
-    {
-        return  - 1;
-    }
-
-    #if DEBUG==1025
-    printf("devNo= %d, %d, %d, %d\n",pSysInfo->ptz_channel[0].dev_no,pSysInfo->ptz_channel[1].dev_no,pSysInfo->ptz_channel[2].dev_no,pSysInfo->ptz_channel[3].dev_no);
-    #endif
-    
-    devNo=pSysInfo->ptz_channel[Chl].dev_no;
-    
-    if(devNo==DEV_NO_NONE)
-    {
-        #if DEBUG==1
-        printf("ERROR devnum=%d\n",devNo);
-        #endif
-        
-        return -1;
-    }
-
-    #if DEBUG==1023
-    printf("devNo=%d, devName=%s\n",devNo,DevNameTab[pSysInfo->ptz_channel[Chl].dev_no]);
-    #endif
-    
-    fd=open(DevNameTab[pSysInfo->ptz_channel[Chl].dev_no], O_RDWR | O_NOCTTY | O_NONBLOCK);
-
-    if(fd<0)
-    {
-        #if DEBUG==1
-        printf("ERROR open %s fail\n",DevNameTab[pSysInfo->ptz_channel[Chl].dev_no]);
-        #endif
-        
-        return -1;
-    }
-    
-    g_serialInfo.devaddr = pSysInfo->ptz_channel[Chl].devaddr;
-    g_serialInfo.ptzDatabit = pSysInfo->ptz_channel[Chl].databit;
-    g_serialInfo.ptzParitybit = pSysInfo->ptz_channel[Chl].parity;
-    g_serialInfo.ptzStopbit = pSysInfo->ptz_channel[Chl].stopbit;
-    g_serialInfo.ptzBaudrate = pSysInfo->ptz_channel[Chl].speed;
-
-    #if DEBUG==1025
-    printf("data=%d, parity=%d, stop=%d, baud=%d, addr=%d\n",g_serialInfo.ptzDatabit,g_serialInfo.ptzParitybit,g_serialInfo.ptzStopbit,g_serialInfo.ptzBaudrate,g_serialInfo.devaddr);
-    #endif
-
-    tcgetattr(fd, &oldtio);
-
-    bzero(&newtio, sizeof(newtio));
-
-    newtio.c_cflag = CLOCAL | CREAD;
-
-    newtio.c_cflag |= ptzGetBaudRate((unsigned int)g_serialInfo.ptzBaudrate);
-    newtio.c_cflag |= ptzGetDataBit((unsigned int)g_serialInfo.ptzDatabit);
-
-    if (g_serialInfo.ptzParitybit == PTZ_PARITY_EVEN)
-    {
-        #if DEBUG==1
-        printf("===set paritybit EVEN===\n");
-        #endif
-
-        newtio.c_cflag |= PARENB;
-    }
-    else if (g_serialInfo.ptzParitybit == PTZ_PARITY_ODD)
-    {
-        #if DEBUG==1
-        printf("===set paritybit ODD===\n");
-        #endif
-
-        newtio.c_cflag |= PARENB;
-        newtio.c_cflag |= PARODD;
-    }
-
-    if (g_serialInfo.ptzStopbit == 2)
-    {
-       #if DEBUG==1023
-       printf("===set stopbit 2 ===\n");
-       #endif
-
-        newtio.c_cflag |= CSTOPB;
-        newtio.c_cflag |= CSIZE;
-    }
-
-    newtio.c_iflag = IGNPAR | ICRNL;
-
-    newtio.c_oflag = 0;
-    newtio.c_lflag = ICANON;
-
-    newtio.c_cc[VTIME] = 0; /* inter-character timer unused */
-    newtio.c_cc[VMIN] = 1; /* blocking read until 1 character arrives */
-
-    tcflush(fd, TCIFLUSH);
-    tcsetattr(fd, TCSANOW, &newtio);
-
-    bzero(ptzBuf, 25);
-
-    ptzCtrlSize = ptzGetCmdCtrl(pSysInfo->ptz_channel[Chl].protocol, ctrlCmd, 0, g_serialInfo.devaddr, ptzBuf);
 
     if (ptzCtrlSize > 0)
     {
@@ -989,7 +845,7 @@ void *PTZCtrlThread(void *arg)
                 printf("rotate begin\n");
                 #endif
 
-                PTZCTRL_setInternalCtrl( Chl, PTZ_ROUND);
+                PTZCTRL_setInternalCtrl( Chl, PTZ_ROUND,0);
                 #if DEBUG==1
                 printf("rotate done\n");
                 #endif
@@ -1001,7 +857,7 @@ void *PTZCtrlThread(void *arg)
                 printf("left begin\n");
                 #endif
 
-                PTZCTRL_setInternalCtrl( Chl, PAN_LEFT);
+                PTZCTRL_setInternalCtrl( Chl, PAN_LEFT,0);
                 #if DEBUG==1
                 printf("left done\n");
                 #endif
@@ -1013,7 +869,7 @@ void *PTZCtrlThread(void *arg)
                 printf("right begin\n");
                 #endif
 
-                PTZCTRL_setInternalCtrl( Chl, PAN_RIGHT);
+                PTZCTRL_setInternalCtrl( Chl, PAN_RIGHT,0);
                 #if DEBUG==1
                 printf("right done\n");
                 #endif
@@ -1025,7 +881,7 @@ void *PTZCtrlThread(void *arg)
                 printf("up begin\n");
                 #endif
 
-                PTZCTRL_setInternalCtrl( Chl, TILT_UP);
+                PTZCTRL_setInternalCtrl( Chl, TILT_UP,0);
                 #if DEBUG==1
                 printf("up done\n");
                 #endif
@@ -1033,181 +889,90 @@ void *PTZCtrlThread(void *arg)
             else if (strcmp(cmd, "down") == 0)
             //down
             {
-                PTZCTRL_setInternalCtrl( Chl, TILT_DOWN);
+                PTZCTRL_setInternalCtrl( Chl, TILT_DOWN,0);
             }
             else if (strcmp(cmd, "leftup") == 0)
             //leftup
             {
-                PTZCTRL_setInternalCtrl( Chl, LEFT_UP);
+                PTZCTRL_setInternalCtrl( Chl, LEFT_UP,0);
             }
             else if (strcmp(cmd, "leftdown") == 0)
             //leftdown
             {
-                PTZCTRL_setInternalCtrl( Chl, LEFT_DOWN);
+                PTZCTRL_setInternalCtrl( Chl, LEFT_DOWN,0);
             }
             else if (strcmp(cmd, "rightup") == 0)
             //rightup
             {
-                PTZCTRL_setInternalCtrl( Chl, RIGHT_UP);
+                PTZCTRL_setInternalCtrl( Chl, RIGHT_UP,0);
             }
             else if (strcmp(cmd, "rightdown") == 0)
             //rightdown
             {
-                PTZCTRL_setInternalCtrl( Chl, RIGHT_DOWN);
+                PTZCTRL_setInternalCtrl( Chl, RIGHT_DOWN,0);
             }
             else if (strcmp(cmd, "zoomin") == 0)
             //zoomin
             {
-                PTZCTRL_setInternalCtrl( Chl, ZOOM_IN);
+                PTZCTRL_setInternalCtrl( Chl, ZOOM_IN,0);
             }
             else if (strcmp(cmd, "zoomout") == 0)
             //zoomout
             {
-                PTZCTRL_setInternalCtrl( Chl, ZOOM_OUT);
+                PTZCTRL_setInternalCtrl( Chl, ZOOM_OUT,0);
             }
             else if (strcmp(cmd, "focusin") == 0)
             //focusin
             {
-                PTZCTRL_setInternalCtrl( Chl, FOCUS_IN);
+                PTZCTRL_setInternalCtrl( Chl, FOCUS_IN,0);
             }
             else if (strcmp(cmd, "focusout") == 0)
             //focusout
             {
-                PTZCTRL_setInternalCtrl( Chl, FOCUS_OUT);
+                PTZCTRL_setInternalCtrl( Chl, FOCUS_OUT,0);
             }
             else if (strcmp(cmd, "aperturein") == 0)
             //aperturein
             {
-                PTZCTRL_setInternalCtrl( Chl, FOCUS_IN);
+                PTZCTRL_setInternalCtrl( Chl, FOCUS_IN,0);
             }
             else if (strcmp(cmd, "apertureout") == 0)
             //apertureout
             {
-                PTZCTRL_setInternalCtrl( Chl, FOCUS_OUT);
+                PTZCTRL_setInternalCtrl( Chl, FOCUS_OUT,0);
             }
             else if (strcmp(cmd, "lighton") == 0)
             //lighton
             {
-                PTZCTRL_setInternalCtrl( Chl, LIGHTON);
+                PTZCTRL_setInternalCtrl( Chl, LIGHTON,0);
             }
             else if (strcmp(cmd, "lightoff") == 0)
             //lightoff
             {
-                PTZCTRL_setInternalCtrl( Chl, LIGHTOFF);
+                PTZCTRL_setInternalCtrl( Chl, LIGHTOFF,0);
             }
             else if (strcmp(cmd, "rainon") == 0)
             //rainon
             {
-                PTZCTRL_setInternalCtrl( Chl, RAINON);
+                PTZCTRL_setInternalCtrl( Chl, RAINON,0);
             }
             else if (strcmp(cmd, "rainoff") == 0)
             //rainoff
             {
-                PTZCTRL_setInternalCtrl( Chl, RAINOFF);
+                PTZCTRL_setInternalCtrl( Chl, RAINOFF,0);
             }
-            //***************ADD BY WBB BEGINE*******//
-/*
-            else if (strcmp(cmd,"preset1")==0)
-            {
-                #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, PRESET1);
-            }
-             else if (strcmp(cmd,"turntopreset1")==0)
-            {
-                 #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, TURNTOPRESET1);
-               
-            }  
-             else if (strcmp(cmd,"preset2")==0)
-            {
-                #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, PRESET2);
-            }
-             else if (strcmp(cmd,"turntopreset2")==0)
-            {
-                 #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, TURNTOPRESET2);
-               
-            }  
-             else if (strcmp(cmd,"preset3")==0)
-            {
-                #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, PRESET3);
-            }
-             else if (strcmp(cmd,"turntopreset3")==0)
-            {
-                 #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, TURNTOPRESET3);
-               
-            }
-             else if (strcmp(cmd,"preset4")==0)
-            {
-                #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, PRESET4);
-            }
-             else if (strcmp(cmd,"turntopreset4")==0)
-            {
-                 #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, TURNTOPRESET4);
-               
-            }
-             else if (strcmp(cmd,"preset5")==0)
-            {
-                #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, PRESET5);
-            }
-             else if (strcmp(cmd,"turntopreset5")==0)
-            {
-                 #if DEBUG==1023
-                printf("turntopreset begin \n");
-                #endif
-                PTZCTRL_setInternalCtrl(Chl, TURNTOPRESET5);
-               
-            }         
-             */
             else if (strcmp(cmd,"preset")==0)
                 //preset
             {
                 npreset=atoi(numbpreset);
-                #if DEBUG==1026
-                printf("----------------------------------");
-                printf("@@@@@@@@@@@@numbpreset=%s@@@@@@@@\n",numbpreset);
-                printf("@@@@@@@@@@@@@preset begin @@@@@@\n");
-                printf("@@@@@@@@@@npreset=%d@@@@@@@@@@@@@\n",npreset);
-                #endif
-
-                PTZCTRL_setInternalpresetCtrl(Chl, PRESET,npreset);
+                PTZCTRL_setInternalCtrl(Chl, PRESET,npreset);
                 
             }
             else if (strcmp(cmd,"turntopreset")==0)
                 //turn to preset
      	    {
                 npreset=atoi(numbpreset);
-                #if DEBUG==1026
-                printf("----------------------------------");
-                printf("@@@@@@@@@@@@numbpreset=%s@@@@@@@@\n",numbpreset);
-                printf("@@@@@@@@@@@@@@turntopreset begin @@@@@@@@@@\n");
-                printf("@@@@@@@@@@@@@@@@npreset=%d@@@@@@@@@\n",npreset);
-                #endif
-                PTZCTRL_setInternalpresetCtrl(Chl, TURNTOPRESET,npreset);
+                PTZCTRL_setInternalCtrl(Chl, TURNTOPRESET,npreset);
             }
 
             //***************ADD BY WBB END*******//
@@ -1218,7 +983,7 @@ void *PTZCtrlThread(void *arg)
                 printf("stop begin\n");
                 #endif
 
-                PTZCTRL_setInternalCtrl( Chl, PTZ_STOP);
+                PTZCTRL_setInternalCtrl( Chl, PTZ_STOP,0);
 
                 #if DEBUG==1
                 printf("stop done\n");

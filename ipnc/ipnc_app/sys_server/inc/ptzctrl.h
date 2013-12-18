@@ -31,8 +31,10 @@ typedef struct {
 #define RAINOFF		(17)
 #define APERTURE_OUT (18)
 #define APERTURE_IN	 (19)
-#define PRESET   (20)
-#define TURNTOPRESET (21)
+/**********add by wbb*******/
+#define PRESET   (2000)
+#define TURNTOPRESET (3000)
+/*
 #define PRESET1 (41) //ADD BY WBB
 #define PRESET2 (42)
 #define PRESET3 (43)
@@ -43,8 +45,7 @@ typedef struct {
 #define TURNTOPRESET3 (53)
 #define TURNTOPRESET4 (54)
 #define TURNTOPRESET5 (55)
-
-int PTZCTRL_setInternalCtrl( int Chl,int ctrlCmd);
-int PTZCTRL_setInternalpresetCtrl(int Chl, int ctrlCmd,int npreset);
+*/
+int PTZCTRL_setInternalCtrl( int Chl,int ctrlCmd,int npreset);
 
 #endif 
