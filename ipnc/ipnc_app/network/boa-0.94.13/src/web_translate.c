@@ -4644,7 +4644,7 @@ int para_schedule(char *data, char *arg)
 		return -1;
 	return sprintf(data, "%d", pSysInfo->lan_config.recordlocal);
 }
-
+/*
  int para_schedulerepeatenable(char *data, char *arg)
 {
 	SysInfo* pSysInfo = GetSysInfo();
@@ -4666,7 +4666,7 @@ int para_schedule(char *data, char *arg)
 		return -1;
 	return sprintf(data, "%d", pSysInfo->lan_config.nScheduleInfiniteEnable);
 }
-
+*/
 /***************** Support Page ***********************************/
 /***************************************************************************
  *                                                                         *
@@ -5259,9 +5259,9 @@ HTML_ARGUMENT HttpArgument [] =
 	{ "sdrenable"		    , para_sdrenable		, AUTHORITY_VIEWER , NULL },
 	{ "schedule"			, para_schedule			, AUTHORITY_VIEWER , NULL },
 	{ "recordlocalstorage"		 , para_recordlocalstorage		 , AUTHORITY_VIEWER , NULL },
-    { "schedulerepeatenable"     , para_schedulerepeatenable     , AUTHORITY_VIEWER , NULL },
-	{ "schedulenumweeks"         , para_schedulenumweeks         , AUTHORITY_VIEWER , NULL },
-    { "scheduleinfiniteenable"   , para_scheduleinfiniteenable   , AUTHORITY_VIEWER , NULL },
+//    { "schedulerepeatenable"     , para_schedulerepeatenable     , AUTHORITY_VIEWER , NULL },
+//	{ "schedulenumweeks"         , para_schedulenumweeks         , AUTHORITY_VIEWER , NULL },
+//    { "scheduleinfiniteenable"   , para_scheduleinfiniteenable   , AUTHORITY_VIEWER , NULL },
 
 	/*       SUPPORT PAGE       */
 	{ "kernelversion"		, para_kernelversion		, AUTHORITY_VIEWER 	, NULL },

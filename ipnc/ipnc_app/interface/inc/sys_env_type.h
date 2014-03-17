@@ -36,6 +36,7 @@
 #define MAC_LENGTH				6 		///< Length of MAC address.
 #define ACOUNT_NUM				10 		///< How many acounts which are stored in system.
 #define SCHDULE_NUM				8 		///< How many schedules will be stored in system.
+#define VIDEO_CHL                       4
 #define MAX_FILE_NAME			128		///< Maximum length of file name.
 
 #define USER_LEN				33 		///< Maximum of acount username length.
@@ -69,6 +70,8 @@
 #define MPEG4_1_PORTNUM	(554)
 #define MPEG4_2_PORTNUM	(8554)
 #define MJPEG_PORTNUM	(8555)
+
+//#define MAX_STORAGE_CHANNEL (4)         //add by wbb
 
 typedef enum{
 	CHIP_NONE = -1,
@@ -157,7 +160,7 @@ typedef struct
 	int			image_acount; ///< Image count
 	int			pid; ///< PID
 	__u16		port; ///< FTP port
- 	__u8		rftpenable; ///< RFTP enable
+ 	__u8		rftpenable; ///< RFTP enable //add by wbb for 4 chooses
 	__u8        ftpfileformat; ///< file format
 } Ftp_Config_Data;
 
@@ -296,18 +299,18 @@ typedef struct
 	__u8		    nDarkBlank; 			            ///< external trigger alarm
 	__u8		    nAlarmAudioPlay; 			    ///< alarm audio play enable/disable
 	__u8		    nAlarmAudioFile; 			    ///< alarm audio file
-	__u8		    nScheduleRepeatEnable; 			///< schedule record repeat enable/disable
-	__u8			nScheduleNumWeeks;   		    ///< scheduled number of weeks
-	__u8		    nScheduleInfiniteEnable; 		///< schedule infinite times enable/disable
+	__u8		    nScheduleRepeatEnable[VIDEO_CHL]; 			///< schedule record repeat enable/disable
+	__u8			nScheduleNumWeeks[VIDEO_CHL];   		    ///< scheduled number of weeks
+	__u8		    nScheduleInfiniteEnable[VIDEO_CHL]; 		///< schedule infinite times enable/disable
 	__u8			alarmlocal;
 	__u8			recordlocal;
 	__u8			expPriority;
 	__u8			codectype1;
 	__u8			codectype2;
 	__u8			codectype3;
-	Schedule_t		aSchedules[SCHDULE_NUM];		///< schedule data
-	int				schedCurDay;
-	int				schedCurYear;
+	Schedule_t		aSchedules[VIDEO_CHL][SCHDULE_NUM];		///< schedule data
+	int				schedCurDay[VIDEO_CHL];
+	int				schedCurYear[VIDEO_CHL];
 	__u8			reloadFlag;
 	__u8			chipConfig;
 	__u8			modelname[OSDTEXTLEN];
@@ -553,6 +556,15 @@ typedef struct LogEntry_t{
 
 #define FILE_MSG_KEY	0xc54be5 ///< File message key.
 
+typedef struct Storage_Config_Data{
+       __u8		    nScheduleRepeatEnable; 			///< schedule record repeat enable/disable
+	__u8			nScheduleNumWeeks;   		    ///< scheduled number of weeks
+	__u8		    nScheduleInfiniteEnable; 		///< schedule infinite times enable/disable
+	Schedule_t		aSchedules[SCHDULE_NUM];		///< schedule datas
+	int				schedCurDay;
+	int				schedCurYear;
+}Storage_Config_Data;
+
 /**
 * @brief system info main data structure.
 */
@@ -571,6 +583,8 @@ typedef struct SysInfo{
 	Sdcard_Config_Data sdcard_config;	///< SD card configuration data
 	Lancam_Config_Data lan_config;		///< IPCAM configuration data
 
+
+ //       Storage_Config_Data storage_config[MAX_STORAGE_CHANNEL];    ///storage setting configuration data
         Ptz_Channel_Data ptz_channel[MAX_NUM_PTZ_CHL_PTZ];
         
     #if 0

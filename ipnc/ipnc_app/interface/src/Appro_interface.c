@@ -141,7 +141,7 @@ int GetAVData( unsigned int field, int serial, AV_DATA * ptr )
 				ret = RET_INVALID_PRM;
 			} else {
 				FrameInfo_t curframe = GetCurrentFrame(FMT_MPEG4);
-				//printf("*******AV_OP_GET_MPEG4_SERIAL******* field: %d\n",curframe.serial_no);
+				printf("*******AV_OP_GET_MPEG4_SERIAL******* field: %d\n",curframe.serial_no);
 				if(curframe.serial_no < 0){
 					ret = RET_NO_VALID_DATA;
 				} else {
@@ -164,7 +164,7 @@ int GetAVData( unsigned int field, int serial, AV_DATA * ptr )
 				ret = RET_INVALID_PRM;
 			} else {
 				FrameInfo_t curframe = GetCurrentFrame(FMT_MPEG4_1);
-				//printf("*******AV_OP_GET_MPEG4_SERIAL******* field: %d\n",curframe.serial_no);
+				printf("*******AV_OP_GET_MPEG4_SERIAL******* field: %d\n",curframe.serial_no);
 				if(curframe.serial_no < 0){
 					ret = RET_NO_VALID_DATA;
 				} else {

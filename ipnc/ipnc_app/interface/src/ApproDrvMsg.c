@@ -161,7 +161,7 @@ FrameInfo_t GetCurrentFrame(FrameFormat_t fmt)
 	msgrcv( qid, &msgbuf,sizeof(msgbuf)-sizeof(long), PROC_MSG_ID, 0);
 	SemRelease(hndlApproDrvSem);
 
-	//printf("************** msgbuf.ret: %d\n",msgbuf.ret);//add by sxh
+	printf("************** msgbuf.ret: %d\n",msgbuf.ret);//add by sxh
 	if(msgbuf.ret != 0)
 		msgbuf.frame_info.serial_no = -1;
 	return msgbuf.frame_info;

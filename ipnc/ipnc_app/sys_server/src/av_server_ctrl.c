@@ -727,7 +727,6 @@ int WaitStreamReady(__u8 stream_flag)
     {
         return  - 1;
     }
-
     vol_data.serial =  - 1;
 
     if (stream_flag &FLAG_STREAM1)
@@ -740,13 +739,17 @@ int WaitStreamReady(__u8 stream_flag)
             }
             else
             {
+                __E("WaitStreamReady begin4.\n");
                 ret = GetAVData(AV_OP_GET_MPEG4_SERIAL,  - 1, &vol_data);
                 ret1 = GetAVData(AV_OP_GET_MPEG4_1_SERIAL,  - 1, &vol_data1);
                 ret2 = GetAVData(AV_OP_GET_MPEG4_2_SERIAL,  - 1, &vol_data2);
                 ret3 = GetAVData(AV_OP_GET_MPEG4_3_SERIAL,  - 1, &vol_data3);
+               printf("ret=%d,ret1=%d,ret2=%d,ret3=%d\n", ret,ret1,ret2,ret3);
+
             }
             if ((ret == RET_SUCCESS && vol_data.serial > 10) || (ret1 == RET_SUCCESS && vol_data1.serial > 10) || (ret2 == RET_SUCCESS && vol_data2.serial > 10) || (ret3 == RET_SUCCESS && vol_data3.serial > 10))
             {
+                __E("WaitStreamReady begin5.\n");
                 return 0;
             }
             usleep(33333);
@@ -2296,8 +2299,8 @@ int SetRecChEnable(unsigned char value)
 
     int ret = 0;
 
-    ret = fSetChRecEnable(value);
-    SetChRecEnableMsg(value);
+//   ret = fSetChRecEnable(value);  //save the record index
+    SetChRecEnableMsg(value);   // sent the record index messege to sys to trigger the file save system
     return ret;
 }
 
@@ -3965,7 +3968,7 @@ int Avs_SetAlarmAudioFile(unsigned char value)
 {
     return fSetAlarmAudioFile(value);
 }
-
+/*
 int Avs_SetScheduleRepeatEnable(unsigned char value)
 {
     return fSetScheduleRepeatEnable(value);
@@ -3980,7 +3983,7 @@ int Avs_SetScheduleInfiniteEnable(unsigned char value)
 {
     return fSetScheduleInfiniteEnable(value);
 }
-
+*/
 int SetAlarmStorage(unsigned char value)
 {
     return fSetAlarmStorage(value);
@@ -3989,4 +3992,8 @@ int SetAlarmStorage(unsigned char value)
 int SetRecordStorage(unsigned char value)
 {
     return fSetRecordStorage(value);
+}
+int SetStorageRec(unsigned char value)
+{
+    return fSetStorageRec(value);
 }

@@ -6068,11 +6068,11 @@ int retrieve_custom_event_schedule(request *req, node_t *node)
 
 	xadd_stag_attr(req, TAG_EventSchedule,RootAttrStr);
 
-	if(pSysInfo->lan_config.nScheduleInfiniteEnable == 0){
+	if(pSysInfo->lan_config.nScheduleInfiniteEnable[0] == 0){
 	  /*TimeBlockList*/
 	  xadd_stag(req, TAG_TimeBlockList);
 	  for(i = 0; i < SCHDULE_NUM; i ++){
-	    pSchedule = &(pSysInfo->lan_config.aSchedules[i]);
+	    pSchedule = &(pSysInfo->lan_config.aSchedules[0][i]);
 
 		sprintf(EventSchedule.dayOfWeek,"%02d",pSchedule -> nDay);
 	    sprintf(EventSchedule.beginTime,"%02d:%02d:%02d",pSchedule -> tStart.nHour, pSchedule -> tStart.nMin, pSchedule -> tStart.nSec);
@@ -9494,8 +9494,8 @@ int retrieve_custom_storage_id(request *req, node_t *node)
 
 	sprintf(StorageSetting.id,"0");
 	sprintf(StorageSetting.storageLocation,"%d",pSysInfo->lan_config.recordlocal);
-	sprintf(StorageSetting.expireEnable,"%d",pSysInfo->lan_config.nScheduleRepeatEnable);
-	sprintf(StorageSetting.numWeeks,"%d",pSysInfo->lan_config.nScheduleNumWeeks);
+	sprintf(StorageSetting.expireEnable,"%d",pSysInfo->lan_config.nScheduleRepeatEnable[0]);
+//	sprintf(StorageSetting.numWeeks,"%d",pSysInfo->lan_config.nScheduleNumWeeks);
 	sprintf(StorageSetting.delschedule,"0");
 
 	xadd_stag_attr(req, TAG_StorageSetting, RootAttrStr);
@@ -9506,7 +9506,7 @@ int retrieve_custom_storage_id(request *req, node_t *node)
 
 	xadd_stag(req, TAG_TimeBlockList);
 	for(i = 0; i < SCHDULE_NUM; i ++){
-	   pSchedule = &(pSysInfo->lan_config.aSchedules[i]);
+	   pSchedule = &(pSysInfo->lan_config.aSchedules[0][i]);
        sprintf(StorageSetting.enabled,"%d",pSchedule -> bStatus);
 
 	    xadd_stag(req, TAG_TimeBlock);

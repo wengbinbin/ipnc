@@ -1120,7 +1120,7 @@ int GetCurrentSerialNo(VIDEO_BLK_INFO *video_info)
  */
 VIDEO_FRAME * GetCurrentFrame(VIDEO_BLK_INFO *video_info)
 {
-	if(video_info == NULL)
+       if(video_info == NULL)
 		return NULL;
 	if(video_info->cur_frame < 0)
 		return NULL;

@@ -316,6 +316,7 @@ typedef enum
   SFIELD_SET_SCHEDULE_REPEAT_ENABLE,
   SFIELD_SET_SCHEDULE_NUMWEEKS,
   SFIELD_SET_SCHEDULE_INFINITE_ENABLE,
+  SFIELD_SET_STORAGE_REC,   //add
   /* Other Contorl */
   SFIELD_DEL_SCHEDULE = 0x2000, ///< Delete all exist schedule.
   SFIELD_DO_LOGIN, ///< Do user login.

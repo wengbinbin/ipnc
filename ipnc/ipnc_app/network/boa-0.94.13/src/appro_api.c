@@ -4469,6 +4469,48 @@ void set_schedule(request *req, COMMAND_ARGUMENT *argm)
 	req->buffer_end += sprintf(req_bufptr(req), OPTION_NG "%s\n", argm->name);
 }
 
+static int get_schedulechl(request *req, COMMAND_ARGUMENT *argm)
+{
+    int videoChl=atoi(strtok(argm->value,"@"));
+    int index=atoi(strtok(argm->value,"@"));
+    #if DEBUG==1
+    printf("get_storagerec videoChl=%d\n",videoChl);
+    #endif
+    SysInfo* pSysInfo = GetSysInfo();
+    Schedule_t *pSchedule;
+    if(pSysInfo == NULL)
+    {
+        return -1;
+    }
+ //  for(i = 0; i < SCHDULE_NUM; i ++){
+			pSchedule = &(pSysInfo->lan_config.aSchedules[videoChl][index]);
+			req->buffer_end += sprintf(req_bufptr(req),
+				OPTION_OK "%02d%d%02d%02d%02d%02d%02d%02d%02d\n", index,
+				pSchedule -> bStatus, pSchedule -> nDay,
+				pSchedule -> tStart.nHour, pSchedule -> tStart.nMin,
+				pSchedule -> tStart.nSec, pSchedule -> tDuration.nHour,
+				pSchedule -> tDuration.nMin, pSchedule -> tDuration.nSec);
+//    }
+    return 0;
+}
+
+void get_schedule(request *req, COMMAND_ARGUMENT *argm)
+{
+    #if DEBUG==1
+    printf("get_plc_serial, value=%s\n",argm->value);
+    #endif
+    
+    do
+    {
+        if(get_schedulechl(req,argm)==-1)
+        {
+            break;
+        }
+        return;
+    } while (0);
+    req->buffer_end += sprintf(req_bufptr(req), OPTION_NG "%s\n", argm->name);
+}
+
 void del_schedule(request *req, COMMAND_ARGUMENT *argm)
 {
 	int bEnable = atoi(argm->value);
@@ -4479,6 +4521,66 @@ void del_schedule(request *req, COMMAND_ARGUMENT *argm)
 		return;
 	} while (0);
 	req->buffer_end += sprintf(req_bufptr(req), OPTION_NG "%s\n", argm->name);
+}
+
+ void set_storage_rec(request *req, COMMAND_ARGUMENT *argm)
+{
+    #if DEBUG==1
+    printf("set_storage\n");
+    #endif
+    
+    do 
+    {
+        ControlSystemData(SFIELD_SET_STORAGE_REC, (void *)argm->value, strlen(argm->value));
+
+        req->buffer_end += sprintf(req_bufptr(req), OPTION_OK "%s\n", argm->name);
+
+        return;
+    } while (0);
+
+    req->buffer_end += sprintf(req_bufptr(req), OPTION_NG "%s\n", argm->name);
+}
+
+static int get_storagerec(request *req, COMMAND_ARGUMENT *argm)
+{
+    int videoChl=atoi(strtok(argm->value,"@"));
+    #if DEBUG==1
+    printf("get_storagerec videoChl=%d\n",videoChl);
+    #endif
+    SysInfo* pSysInfo = GetSysInfo();
+    if(pSysInfo == NULL)
+    {
+        return -1;
+    }
+   req->buffer_end += sprintf(req_bufptr(req), OPTION_OK "%s=%d@%d@%d\n", argm->name, 
+                                                    videoChl, 
+                                                    pSysInfo->lan_config.nScheduleInfiniteEnable[videoChl], 
+                                                    pSysInfo->lan_config.nScheduleRepeatEnable[videoChl]);
+
+    #if DEBUG==0
+    printf(OPTION_OK "%s=%d@%d@%s\n", argm->name, 
+                                                    videoChl, 
+                                                    pSysInfo->lan_config.nScheduleInfiniteEnable[videoChl], 
+                                                    pSysInfo->lan_config.nScheduleRepeatEnable[videoChl]);
+    #endif
+    return 0;
+}
+
+void get_storage_rec(request *req, COMMAND_ARGUMENT *argm)
+{
+    #if DEBUG==1
+    printf("get_plc_serial, value=%s\n",argm->value);
+    #endif
+    
+    do
+    {
+        if(get_storagerec (req,argm)==-1)
+        {
+            break;
+        }
+        return;
+    } while (0);
+    req->buffer_end += sprintf(req_bufptr(req), OPTION_NG "%s\n", argm->name);
 }
 void set_motionenable(request *req, COMMAND_ARGUMENT *argm)
 {
@@ -5182,11 +5284,17 @@ HTTP_OPTION HttpOptionTable [] =
 	{ "rftpenable"				, set_rftpenable				, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
 	{ "sdrenable"				, set_sdrenable					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
 	{ "recordlocalstorage"  	, set_recordlocalstorage		, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
-	{ "schedulerepeatenable"    , set_schedulerepeatenable	  	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
-	{ "schedulenumweeks"        , set_schedulenumweeks	      	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
-    { "scheduleinfiniteenable"  , set_scheduleinfiniteenable 	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+//	{ "schedulerepeatenable"    , set_schedulerepeatenable	  	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+//	{ "schedulenumweeks"        , set_schedulenumweeks	      	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+//    { "scheduleinfiniteenable"  , set_scheduleinfiniteenable 	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
 	{ "schedule"				, set_schedule					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
-	{ "delschedule"		    	, del_schedule					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+	{ "getschedule"				, get_schedule					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+
+//	{ "delschedule"		    	, del_schedule					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+
+	{ "setstoragerec"				, set_storage_rec       , AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+	{ "getstoragerec"				, get_storage_rec		, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+
 //add by wbb
 //       { "getscheduleinfiniteenable"  , get_scheduleinfiniteenable 	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
 

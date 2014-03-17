@@ -1390,15 +1390,15 @@ int fSetMPEG42Res(unsigned char value)
 * @retval 0 Success.
 * @retval -1 Fail
 */
-int fSetSchedule(int index,Schedule_t* pSchedule, int day, int year)
+int fSetSchedule(int video,int index,Schedule_t* pSchedule, int day, int year)
 {
 	SysInfo *pSysInfo = (SysInfo *)pShareMem;
 	if(pSysInfo == NULL)
 		return -1;
 
-	memcpy(&pSysInfo->lan_config.aSchedules[index], pSchedule, sizeof(Schedule_t));
-	memcpy(&pSysInfo->lan_config.schedCurDay, &day, sizeof(day));
-	memcpy(&pSysInfo->lan_config.schedCurYear, &year, sizeof(year));
+	memcpy(&pSysInfo->lan_config.aSchedules[video][index], pSchedule, sizeof(Schedule_t));
+	memcpy(&pSysInfo->lan_config.schedCurDay[video], &day, sizeof(day));
+	memcpy(&pSysInfo->lan_config.schedCurYear[video], &year, sizeof(year));
 
 	return SetSysInfo(0);
 }
@@ -1638,7 +1638,10 @@ int fSetRftpenable(unsigned char value)
 	SysInfo *pSysInfo = (SysInfo *)pShareMem;
 	if(pSysInfo == NULL)
 		return -1;
-	memcpy(&pSysInfo->ftp_config.rftpenable, &value, sizeof(value));
+ //      int storageChl=atoi(strtok(value,"@"));
+ //      int rftpenable=atoi(strtok(NULL,"@"));
+//	memcpy(&pSysInfo->ftp_config.rftpenable[storageChl], &rftpenable, sizeof(value));
+        memcpy(&pSysInfo->ftp_config.rftpenable, &value, sizeof(value));
 	return SetSysInfo(0);
 }
 /**
@@ -3368,7 +3371,7 @@ int fSetScheduleRepeatEnable(unsigned char value)
 	memcpy(&pSysInfo->lan_config.nScheduleRepeatEnable, &value, sizeof(value));
 	return SetSysInfo(0);
 }
-
+/*
 int fSetScheduleNumWeeks(unsigned char value)
 {
 	SysInfo *pSysInfo = (SysInfo *)pShareMem;
@@ -3377,15 +3380,19 @@ int fSetScheduleNumWeeks(unsigned char value)
 	memcpy(&pSysInfo->lan_config.nScheduleNumWeeks, &value, sizeof(value));
 	return SetSysInfo(0);
 }
-
+*/
+/*
 int fSetScheduleInfiniteEnable(unsigned char value)
 {
 	SysInfo *pSysInfo = (SysInfo *)pShareMem;
 	if(pSysInfo == NULL)
 		return -1;
-	memcpy(&pSysInfo->lan_config.nScheduleInfiniteEnable, &value, sizeof(value));
+       int storageChl=atoi(strtok(value,"@"));
+       unsigned char infiniteEnable=atoi(strtok(NULL,"@"));
+	memcpy(&pSysInfo->lan_config.nScheduleInfiniteEnable[storageChl], &infiniteEnable, sizeof(infiniteEnable));
 	return SetSysInfo(0);
 }
+*/
 int fSetAlarmStorage(unsigned char value)
 {
 	SysInfo *pSysInfo = (SysInfo *)pShareMem;
@@ -3424,4 +3431,33 @@ int fSetChRecEnable(unsigned char value)
 	}
 	return SetSysInfo(0);
 }
+int fSetStorageRec(unsigned char *value)
+{
+    SysInfo *pSysInfo = (SysInfo *)pShareMem;
 
+    #if DEBUG==1
+    printf("fSetstorage value=%s\n",value);
+    #endif
+    
+    if(pSysInfo == NULL)
+    {
+        return -1;
+    }
+
+    int videoChl=atoi(strtok(value,"@"));  
+    char repeatShd=strtok(NULL,"@");
+    char infinitRcd=strtok(NULL,"@");
+
+    #if DEBUG==1
+    printf("plcChl=%d\n",plcChl);
+     #endif
+    pSysInfo->lan_config.nScheduleRepeatEnable[videoChl]=repeatShd;
+    pSysInfo->lan_config.nScheduleInfiniteEnable[videoChl]=infinitRcd;
+
+
+    #if DEBUG==1
+    printf("call SendPlcRestartCmd()\n");
+    #endif
+
+    return SetSysInfo(0);
+}

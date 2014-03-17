@@ -33,6 +33,7 @@
 #include <alarm_msg_drv.h>
 #include <sys_env_type.h>
 #include <sem_util.h>
+#include<math.h>
 
 #ifdef _SCHED_DEBUG
 #define __D(fmt, args...) fprintf(stderr,  fmt, ## args)
@@ -91,9 +92,9 @@ void ResumeSchedule()
  */
 void ShowSched_info(Schedule_t *pSched_info, int showcnt)
 {
-    //int        showcnt = 0;
+//    int        showcnt = 0;
 
-    //while( showcnt < 7 )
+//    while( showcnt < 7 )
     {
         __D("num = %d ", showcnt);
         __D("bStatus = %d ", pSched_info[showcnt].bStatus);
@@ -104,7 +105,7 @@ void ShowSched_info(Schedule_t *pSched_info, int showcnt)
         __D("nHour = %d ", pSched_info[showcnt].tDuration.nHour);
         __D("nMin = %d ", pSched_info[showcnt].tDuration.nMin);
         __D("nSec = %d \n", pSched_info[showcnt].tDuration.nSec);
-        //showcnt++;
+//        showcnt++;
 
     }
 }
@@ -296,88 +297,125 @@ void *scheduleThrFxn(void *args)
     void *status = NULL;
     SysInfo *pSysInfo = (SysInfo*)args;
     int nSleepDuration = 1;
+    int i,value;
     int index = 0, count = 0;
     /* Schd_Status = 0: No schedule ; others : current recording destination*/
     int Schd_Status = 0, tCurStatus;
-    Schedule_t *pSched_info = &pSysInfo->lan_config.aSchedules[0];
-    int schedDay = 0, schedYear = 0, schedWeeks = 0, schedInfinite = 0;
-
-    schedInfinite = pSysInfo->lan_config.nScheduleInfiniteEnable;
-    schedDay = pSysInfo->lan_config.schedCurDay;
-    schedYear = pSysInfo->lan_config.schedCurYear;
-    schedWeeks = pSysInfo->lan_config.nScheduleNumWeeks;
-
+    int schedDay = 0, schedYear = 0, schedWeeks = 52, schedInfinite = 0;
+    value=pSysInfo->lan_config.nScheduleInfiniteEnable[0]|pSysInfo->lan_config.nScheduleInfiniteEnable[1]*2|
+                        pSysInfo->lan_config.nScheduleInfiniteEnable[2]*4|pSysInfo->lan_config.nScheduleInfiniteEnable[3]*8;
+    SetRecChEnable(value);
     sleep(nSleepDuration);
-    while (IsFileThreadQuit() == 0)
+    
+    for(i=0;i<4;++i)
     {
-        //sleep(nSleepDuration);
-        if (IsSchedulePause())
+        if(pSysInfo->lan_config.nScheduleRepeatEnable[i]==1)
         {
-            index =  - 1;
+               Schedule_t *pSched_info = &pSysInfo->lan_config.aSchedules[i][0];
+               schedDay = pSysInfo->lan_config.schedCurDay[i];
+               schedYear = pSysInfo->lan_config.schedCurYear[i];            
+               index = schedCheckTimeRange(pSched_info, schedDay, schedYear, schedWeeks, schedInfinite);
+               if (index != -1)
+                   value |= (int)(pow(2,i));
+                    
         }
-        else
-        {
-            index = schedCheckTimeRange(pSched_info, schedDay, schedYear, schedWeeks, schedInfinite);
-            tCurStatus = GetRecordDst(pSysInfo);
-        }
-        if (index !=  - 1)
-        {
-            /* Have a schedule */
-            if (pSysInfo->sdcard_config.sdinsert == 0)
-            {
-                /* When in schedule, send one message per 10 secs. */
-                if (count == 0)
-                {
-                    SendAlarmSchedule(index);
-                    count = 9;
-                }
-                else
-                {
-                    count--;
-                }
-            }
-            else
-            {
-                /* AVI no stop case */
-                if (tCurStatus != 0)
-                {
-                    /* Any record destination was seleced */
-                    if (Schd_Status == 0)
-                    {
-                        /* First time start */
-                        SendAlarmSchedule(index);
-                    }
-                    else if (Schd_Status != tCurStatus)
-                    {
-                        __D("Option changed");
-                        SendAlarmScheduleEnd();
-                        SendAlarmSchedule(index);
-                    }
-                }
-                else
-                {
-                    if (Schd_Status != 0)
-                    {
-                        /* All option was canceled */
-                        SendAlarmScheduleEnd();
-                    }
-                }
-            }
-            Schd_Status = tCurStatus;
-        }
-        else
-        {
-            if (Schd_Status != 0)
-            {
-                SendAlarmScheduleEnd();
-            }
-            Schd_Status = 0;
-            count = 0;
-        }
-        sleep(nSleepDuration);
     }
+    SetRecChEnable(value);
+    sleep(nSleepDuration);
+
     return status;
+
 }
+
+//void *scheduleThrFxn(void *args)
+//{
+//    void *status = NULL;
+//    SysInfo *pSysInfo = (SysInfo*)args;
+//    int nSleepDuration = 1;
+//    int index = 0, count = 0;
+//    /* Schd_Status = 0: No schedule ; others : current recording destination*/
+//    int Schd_Status = 0, tCurStatus;
+//    Schedule_t *pSched_info = &pSysInfo->lan_config.aSchedules[0];
+//    int schedDay = 0, schedYear = 0, schedWeeks = 0, schedInfinite = 0;
+
+//    schedInfinite=pSysInfo->lan_config.nScheduleInfiniteEnable[0]|pSysInfo->lan_config.nScheduleInfiniteEnable[1]|
+//                        pSysInfo->lan_config.nScheduleInfiniteEnable[2]|pSysInfo->lan_config.nScheduleInfiniteEnable[3];
+ //  schedInfinite = pSysInfo->lan_config.nScheduleInfiniteEnable;    ///
+//    schedDay = pSysInfo->lan_config.schedCurDay;
+//    schedYear = pSysInfo->lan_config.schedCurYear;
+//    schedWeeks = pSysInfo->lan_config.nScheduleNumWeeks;
+
+//    sleep(nSleepDuration);
+//    while (IsFileThreadQuit() == 0)
+//    {
+//        //sleep(nSleepDuration);
+//        if (IsSchedulePause())
+//        {
+//            index =  - 1;
+//        }
+//        else
+//        {
+//            index = schedCheckTimeRange(pSched_info, schedDay, schedYear, schedWeeks, schedInfinite);
+//            tCurStatus = GetRecordDst(pSysInfo);
+//        }
+//        if (index !=  - 1)
+//        {
+//            /* Have a schedule */
+//            if (pSysInfo->sdcard_config.sdinsert == 0)
+//            {
+//                /* When in schedule, send one message per 10 secs. */
+//                if (count == 0)
+//                {
+//                    SendAlarmSchedule(index);
+//                    count = 9;
+//                }
+//                else
+//                {
+//                    count--;
+//                }
+//            }
+//            else
+//            {
+//                /* AVI no stop case */
+//                if (tCurStatus != 0)
+//                {
+//                    /* Any record destination was seleced */
+//                    if (Schd_Status == 0)
+//                    {
+//                        /* First time start */
+//                        SendAlarmSchedule(index);
+//                    }
+//                    else if (Schd_Status != tCurStatus)
+//                    {
+//                        __D("Option changed");
+//                        SendAlarmScheduleEnd();
+//                        SendAlarmSchedule(index);
+//                    }
+//                }
+//                else
+//                {
+//                    if (Schd_Status != 0)
+//                    {
+//                        /* All option was canceled */
+//                        SendAlarmScheduleEnd();
+//                    }
+//                }
+//            }
+//            Schd_Status = tCurStatus;
+//        }
+//        else
+//        {
+//            if (Schd_Status != 0)
+//            {
+//                SendAlarmScheduleEnd();
+//            }
+//            Schd_Status = 0;
+//            count = 0;
+//        }
+//        sleep(nSleepDuration);
+//    }
+//    return status;
+//}
 
 /**
  * @breif Schedule manager initial.

@@ -596,18 +596,18 @@ static SysInfo SysInfoDefault =
 		0,
 		0,
 		0,
-		0,
-		52,
-		1, /* Enable infinite schedule */
+		{0,0,0,0},   //RECORD
+		{52,52,52,52},
+		{0,0,0,0},  /* disEnable infinite schedule  1,2,4,8 enable infinite schedule each channel*/ 
 		0,
 		0,
 		0,
 		H264_CODEC,
 		H264_CODEC,
 		H264_CODEC,
-		SCHEDULE_DEFAULT,
-     	0,
-     	0,
+		{SCHEDULE_DEFAULT,SCHEDULE_DEFAULT,SCHEDULE_DEFAULT,SCHEDULE_DEFAULT},//4   /* 4 VIDEOCHL  */
+     	{0,0,0,0},
+     	{0,0,0,0},
      	0,
      	0,
      	MODELNAME_DEFAULT,

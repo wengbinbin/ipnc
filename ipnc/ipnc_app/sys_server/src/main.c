@@ -4903,6 +4903,7 @@ int ProcSysMsg(SYS_MSG_BUF *pMsg)
                 ret = 1;
                 break;
             }
+      /*  
         case SYS_MSG_SET_SCHEDULE_REPEAT_ENABLE:
             {
                 unsigned char value;
@@ -4937,6 +4938,7 @@ int ProcSysMsg(SYS_MSG_BUF *pMsg)
                 ret = 1;
                 break;
             }
+
         case SYS_MSG_SET_SCHEDULE_INFINITE_ENABLE:
             {
                 unsigned char value;
@@ -4949,6 +4951,24 @@ int ProcSysMsg(SYS_MSG_BUF *pMsg)
                 if (Avs_SetScheduleInfiniteEnable(value) != 0)
                 {
                     printf("Fail at SYS_MSG_SET_SCHEDULE_INFINITE_ENABLE\n");
+                    break;
+                }
+                ret = 1;
+                break;
+            }
+            */
+        case SYS_MSG_SET_STORAGE_REC:
+                        {
+                unsigned char value[256];
+                DBG("SYS_MSG_SET_STORAGE_REC\n");
+                if (pMsg->length != sizeof(value))
+                {
+                    break;
+                }
+                ShareMemRead(pMsg->offset, &value, pMsg->length);
+                if (SetStorageRec(value) != 0)
+                {
+                    printf("Fail at SYS_MSG_SET_STORAGE\n");
                     break;
                 }
                 ret = 1;

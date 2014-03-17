@@ -2433,14 +2433,14 @@ int SetSchedule(void *buf, int length)
 {
     struct tm *pCurTime = schedGetCurTime();
     Schedule_t schedule;
-    int index, bStatus, nDay, nSHour, nSMin, nSSec, nDHour, nDMin, nDSec;
+    int videochl,index, bStatus, nDay, nSHour, nSMin, nSSec, nDHour, nDMin, nDSec;
     SysInfo *pSysInfo = GetSysInfo();
     if (pSysInfo == NULL)
     {
         return  - 1;
     }
 
-    if (sscanf(buf, "%02d%1d%02d%02d%02d%02d%02d%02d%02d", &index, &bStatus,  &nDay, &nSHour, &nSMin, &nSSec, &nDHour, &nDMin, &nDSec) != 9)
+    if (sscanf(buf, "%1d%02d%1d%02d%02d%02d%02d%02d%02d%02d", &videochl,&index, &bStatus,  &nDay, &nSHour, &nSMin, &nSSec, &nDHour, &nDMin, &nDSec) != 10)
     {
         return  - 1;
     }
@@ -2460,7 +2460,7 @@ int SetSchedule(void *buf, int length)
     //printf("SCHEDULE DEBUG VALUE: CurYear: %d CurMon: %d CurDay: %d\n",
     //    pCurTime->tm_year, pCurTime->tm_mon, pCurTime->tm_yday);
 
-    return fSetSchedule(index, &schedule, pCurTime->tm_yday, pCurTime->tm_year);
+    return fSetSchedule(videochl,index, &schedule, pCurTime->tm_yday, pCurTime->tm_year);
 }
 
 /**
@@ -2513,7 +2513,7 @@ return &pSysInfo->lan_config.net.upnpport;
  */
 int DelSchedule(int bEnable)
 {
-    int i;
+    int i,j;
     Schedule_t schedule =
     {
         0, 1,
@@ -2529,11 +2529,12 @@ int DelSchedule(int bEnable)
 
     if (bEnable == 1)
     {
-        for (i = 0; i < SCHDULE_NUM; i++)
-            if (fSetSchedule(i, &schedule, 0, 0))
-            {
-                return  - 1;
-            }
+         for(j=0;j<VIDEO_CHL;j++)
+                for (i = 0; i < SCHDULE_NUM; i++)
+                    if (fSetSchedule(j,i, &schedule, 0, 0))
+                    {
+                        return  - 1;
+                    }
     }
 
     return 0;

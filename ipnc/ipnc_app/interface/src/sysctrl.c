@@ -475,6 +475,10 @@ int ControlSystemData(unsigned int field, void *data, unsigned int len)
 		case SFIELD_DEL_SCHEDULE:
 			ret = DelSysSchedule(data, len);
 			break;
+             case SFIELD_SET_STORAGE_REC:
+                    ret = SetSysCommon(data, len, SYS_MSG_SET_STORAGE_REC);
+                    break;
+                    
 		case SFIELD_SET_IMAGE2A:
 			ret = SetSysImage2A(data, len);
 			break;
