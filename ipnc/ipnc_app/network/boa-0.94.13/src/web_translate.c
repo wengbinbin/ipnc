@@ -5357,7 +5357,7 @@ void arg_hash_table_cleanup()
 int ShowAllWebValue(char *data, int max_size, AUTHORITY authority)
 {
 	
-	#ifdef VANLINK_DVR_CONFIG_DEBUG
+       #ifdef VANLINK_DVR_CONFIG_DEBUG
 	printf("~~~~~~~~~~~~ShowAllWebValue Begin!!!\n");
 	#endif
 

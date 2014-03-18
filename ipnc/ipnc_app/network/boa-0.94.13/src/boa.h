@@ -50,7 +50,7 @@
 #include "compat.h"             /* oh what fun is porting */
 #include "defines.h"
 #include "globals.h"
-#define VANLINK_DVR_CONFIG_DEBUG
+#define VANLINK_DVR_CONFIG_DEBUG 2014318
 
 /* alias */
 void add_alias(char *fakename, char *realname, int script);
