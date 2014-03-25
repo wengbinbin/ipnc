@@ -4978,6 +4978,29 @@ int ProcSysMsg(SYS_MSG_BUF *pMsg)
                 break;       
                 
             }
+        case SYS_MSG_SET_STORAGE:
+            {
+                unsigned char value[256];
+
+                #if DEBUG==1024
+                printf("SYS_MSG_SET_PRESETNOTE\n");
+                printf("-------%s,%d\n",pMsg->offset,pMsg->length);
+                #endif
+                
+                ShareMemRead(pMsg->offset, &value, pMsg->length);
+                #if DEBUG==1024
+                printf("-------%s,%d\n",value,pMsg->length);            
+                #endif 
+                value[pMsg->length]='\0';
+                if (SetStorageRec(value) != 0)
+                {
+                    printf("\nSystemServer:Fail at SYS_MSG_SET_PLC_TCP\n");
+                    break;
+                }
+                ret = 1;
+                break;                       
+            }
+      
         default:
             printf("Unknown message. Quit\n");
             IsSysQuit = 1;

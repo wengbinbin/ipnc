@@ -85,7 +85,8 @@ int fSetImageFormat(unsigned char value);
 int fSetResolution(unsigned char value);
 int fSetMPEG4Res(unsigned char value);
 int fSetMPEG42Res(unsigned char value);
-int fSetSchedule(int index,Schedule_t* pSchedule, int day, int year);
+//int fSetSchedule(int index,Schedule_t* pSchedule, int day, int year);//modify by wbb 2014
+int fSetSchedule(int vediochl,int index,Schedule_t* pSchedule, int day, int year);
 int fSetLostAlarm(unsigned char value);
 int fSetSDAlarmEnable(unsigned char value);
 int fSetFTPAlarmEnable(unsigned char value);

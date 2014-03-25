@@ -1390,16 +1390,19 @@ int fSetMPEG42Res(unsigned char value)
 * @retval 0 Success.
 * @retval -1 Fail
 */
-int fSetSchedule(int index,Schedule_t* pSchedule, int day, int year)
+int fSetSchedule(int vediochl,int index,Schedule_t* pSchedule, int day, int year)
 {
 	SysInfo *pSysInfo = (SysInfo *)pShareMem;
 	if(pSysInfo == NULL)
 		return -1;
+// modify by wbb 2014
+//	memcpy(&pSysInfo->lan_config.aSchedules[index], pSchedule, sizeof(Schedule_t));
+//	memcpy(&pSysInfo->lan_config.schedCurDay, &day, sizeof(day));
+//	memcpy(&pSysInfo->lan_config.schedCurYear, &year, sizeof(year));
 
-	memcpy(&pSysInfo->lan_config.aSchedules[index], pSchedule, sizeof(Schedule_t));
-	memcpy(&pSysInfo->lan_config.schedCurDay, &day, sizeof(day));
-	memcpy(&pSysInfo->lan_config.schedCurYear, &year, sizeof(year));
-
+	memcpy(&pSysInfo->storage_config[vediochl].aSchedules[index], pSchedule, sizeof(Schedule_t));
+	memcpy(&pSysInfo->storage_config[vediochl].schedCurDay, &day, sizeof(day));
+	memcpy(&pSysInfo->storage_config[vediochl].schedCurYear, &year, sizeof(year));
 	return SetSysInfo(0);
 }
 /**
@@ -3424,4 +3427,22 @@ int fSetChRecEnable(unsigned char value)
 	}
 	return SetSysInfo(0);
 }
+
+//add by wbb 2014
+int fSetStorageRec(unsigned char value)
+{
+    SysInfo *pSysinfo =(SysInfo*)pShareMem;
+    if(pSysInfo == NULL)
+		return -1;
+    int videoChl=atoi(strtok(value,"@"));
+    char repeatShd=strtok(NULL,"@");
+    char infinitRcd=strtok(NULL,"@");
+
+    pSysinfo->storage_config[videoChl].nScheduleInfiniteEnable=infinitRcd;
+    pSysinfo->storage_config[videoChl].nScheduleRepeatEnable=repeatShd; 
+
+    return SetSysInfo(0);
+}
+
+
 

@@ -2433,18 +2433,19 @@ int SetSchedule(void *buf, int length)
 {
     struct tm *pCurTime = schedGetCurTime();
     Schedule_t schedule;
+    int videochl;    //add by wbb 2014
     int index, bStatus, nDay, nSHour, nSMin, nSSec, nDHour, nDMin, nDSec;
     SysInfo *pSysInfo = GetSysInfo();
     if (pSysInfo == NULL)
     {
         return  - 1;
     }
-
-    if (sscanf(buf, "%02d%1d%02d%02d%02d%02d%02d%02d%02d", &index, &bStatus,  &nDay, &nSHour, &nSMin, &nSSec, &nDHour, &nDMin, &nDSec) != 9)
+    //add one parameter 2014
+    if (sscanf(buf, "%1d%02d%1d%02d%02d%02d%02d%02d%02d%02d", &videochl,&index, &bStatus,  &nDay, &nSHour, &nSMin, &nSSec, &nDHour, &nDMin, &nDSec) != 9)
     {
         return  - 1;
     }
-
+ 
     schedule.bStatus = bStatus;
     schedule.nDay = nDay;
     schedule.tStart.nHour = nSHour;
@@ -2460,7 +2461,7 @@ int SetSchedule(void *buf, int length)
     //printf("SCHEDULE DEBUG VALUE: CurYear: %d CurMon: %d CurDay: %d\n",
     //    pCurTime->tm_year, pCurTime->tm_mon, pCurTime->tm_yday);
 
-    return fSetSchedule(index, &schedule, pCurTime->tm_yday, pCurTime->tm_year);
+    return fSetSchedule(videochl,index, &schedule, pCurTime->tm_yday, pCurTime->tm_year);
 }
 
 /**

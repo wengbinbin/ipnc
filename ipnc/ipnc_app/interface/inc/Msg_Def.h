@@ -403,6 +403,7 @@ enum {
     SYS_MSG_SET_SCHEDULE_REPEAT_ENABLE,
     SYS_MSG_SET_SCHEDULE_NUM_WEEKS,
     SYS_MSG_SET_SCHEDULE_INFINITE_ENABLE,
+    SYS_MSG_SET_STORAGE,  //add by wbb 2014
 	/* Maintainence */
 	SYS_MSG_SET_DEFAULT,
 	/**********************/
@@ -432,7 +433,7 @@ enum {
 	SYS_MSG_GET_SD_FILENAME,///< Get current recording file in SD card.
 	SYS_MSG_DO_BOOT_PROC,///< Tell system server to do something about boot control.
 	SYS_MSG_MAX,
-	SYS_MSG_SET_PRESETNOTE   ///add by wbb
+	SYS_MSG_SET_PRESETNOTE ,  ///add by wbb
 };
 
 /**

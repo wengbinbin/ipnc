@@ -70,6 +70,8 @@
 #define MPEG4_2_PORTNUM	(8554)
 #define MJPEG_PORTNUM	(8555)
 
+#define MAX_STORAGE_CHANNEL (4)    //add by wbb 2014
+
 typedef enum{
 	CHIP_NONE = -1,
 	CHIP_DM365 = 0,
@@ -551,6 +553,16 @@ typedef struct LogEntry_t{
 	struct tm time;		///< event log time
 }LogEntry_t;
 
+//add by wbb 2014
+typedef struct Storage_Config_Data{
+	__u8		    nScheduleRepeatEnable; 			///< schedule record repeat enable/disable
+	__u8			nScheduleNumWeeks;   		    ///< scheduled number of weeks
+	__u8		    nScheduleInfiniteEnable; 		///< schedule infinite times enable/disable
+	Schedule_t		aSchedules[SCHDULE_NUM];		///< schedule data
+	int				schedCurDay;
+	int				schedCurYear;      
+}Storage_Config_Data;
+
 #define FILE_MSG_KEY	0xc54be5 ///< File message key.
 
 /**
@@ -571,8 +583,8 @@ typedef struct SysInfo{
 	Sdcard_Config_Data sdcard_config;	///< SD card configuration data
 	Lancam_Config_Data lan_config;		///< IPCAM configuration data
 
-        Ptz_Channel_Data ptz_channel[MAX_NUM_PTZ_CHL_PTZ];
-        
+       Ptz_Channel_Data ptz_channel[MAX_NUM_PTZ_CHL_PTZ];
+       Storage_Config_Data storage_config[MAX_STORAGE_CHANNEL];  //add by wbb 2014
     #if 0
 	RS232_Config 	rs232_config[MAX_RS232_NUM];
 	int				rs232num;//232 ¸öÊý
