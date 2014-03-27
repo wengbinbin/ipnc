@@ -4487,18 +4487,19 @@ static int get_schedulechl(request *req, COMMAND_ARGUMENT *argm)
 //    int index=atoi(strtok(argm->value,"@"));
     SysInfo* pSysInfo = GetSysInfo();
     Schedule_t *pSchedule;
+    int i;
     if(pSysInfo == NULL)
 		return -1;
     for(i = 0; i < SCHDULE_NUM; i ++){
 			pSchedule = &(pSysInfo->storage_config[videoChl].aSchedules[i]);
-			ret += sprintf(data + ret,
+			req->buffer_end  += sprintf(req_bufptr(req)+ req->buffer_end ,
 				"%2d%d%02d%02d%02d%02d%02d%02d%02d\n",i,
 				pSchedule -> bStatus, pSchedule -> nDay,
 				pSchedule -> tStart.nHour, pSchedule -> tStart.nMin,
 				pSchedule -> tStart.nSec, pSchedule -> tDuration.nHour,
 				pSchedule -> tDuration.nMin, pSchedule -> tDuration.nSec);
     }
-    return ret;
+    return 0;
 }    
  
 void get_schedule(request *req, COMMAND_ARGUMENT *argm)
@@ -4527,16 +4528,16 @@ static int get_storagerec(request *req, COMMAND_ARGUMENT *argm)
     {
         return -1;
     }   
-    req->buffer_end += sprintf(req_bufptr(req), OPTION_OK "%s=%d%d@%d\n", argm->name, 
+    req->buffer_end += sprintf(req_bufptr(req), OPTION_OK "%s=%d@%d@%d\n", argm->name, 
                                                     videoChl, 
                                                     pSysInfo->storage_config[videoChl].nScheduleInfiniteEnable, 
-                                                    pSysInfo->storage_config[videoChl].nScheduleRepeatEnable)
+                                                    pSysInfo->storage_config[videoChl].nScheduleRepeatEnable);
 
 
     printf(OPTION_OK "%s=%d@%d@%d\n", argm->name, 
                                                     videoChl, 
                                                     pSysInfo->storage_config[videoChl].nScheduleInfiniteEnable, 
-                                                    pSysInfo->storage_config[videoChl].nScheduleRepeatEnable )
+                                                    pSysInfo->storage_config[videoChl].nScheduleRepeatEnable );
 
     return 0;
 }
@@ -4545,7 +4546,7 @@ void get_storage_rec(request *req, COMMAND_ARGUMENT *argm)
     
     do
     {
-        if(get_storage_rec(req,argm)==-1)
+        if(get_storagerec(req,argm)==-1)
         {
             break;
         }        
@@ -4557,7 +4558,7 @@ void get_storage_rec(request *req, COMMAND_ARGUMENT *argm)
 void set_storage_rec(request *req, COMMAND_ARGUMENT *argm)
 {
 	do {
-        if(ControlSystemData(SFIELD_SET_STORAGE, &value, strlen(argm->value)) < 0)
+        if(ControlSystemData(SFIELD_SET_STORAGE, (void *)argm->value, strlen(argm->value)) < 0)
 			break;
 		req->buffer_end += sprintf(req_bufptr(req), OPTION_OK "%s\n", argm->name);
 		return;
@@ -5277,8 +5278,8 @@ HTTP_OPTION HttpOptionTable [] =
 //add by wbb
 	{ "getschedule"				, get_schedule					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
         //getallschedule
-	{ "setsoragerec"		    	, set_storage_rec					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
-	{ "getsoragerec"		    	, get_storage_rec					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+	{ "setstoragerec"		    	, set_storage_rec					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
+	{ "getstoragerec"		    	, get_storage_rec					, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },
 
         
 //       { "getscheduleinfiniteenable"  , get_scheduleinfiniteenable 	, AUTHORITY_OPERATOR, FALSE,  TRUE, NULL },

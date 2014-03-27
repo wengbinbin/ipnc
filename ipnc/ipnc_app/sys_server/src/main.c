@@ -4982,22 +4982,22 @@ int ProcSysMsg(SYS_MSG_BUF *pMsg)
             {
                 unsigned char value[256];
 
-                #if DEBUG==1024
-                printf("SYS_MSG_SET_PRESETNOTE\n");
+                
+                printf("SYS_MSG_SET_STORAGE\n");
                 printf("-------%s,%d\n",pMsg->offset,pMsg->length);
-                #endif
+               
                 
                 ShareMemRead(pMsg->offset, &value, pMsg->length);
-                #if DEBUG==1024
+                
                 printf("-------%s,%d\n",value,pMsg->length);            
-                #endif 
-                value[pMsg->length]='\0';
+                
                 if (SetStorageRec(value) != 0)
                 {
-                    printf("\nSystemServer:Fail at SYS_MSG_SET_PLC_TCP\n");
+                    printf("\nSystemServer:Fail at SYS_MSG_SSET_STORAGE\n");
                     break;
                 }
                 ret = 1;
+                printf("-------%s,%d\n",value,pMsg->length);   
                 break;                       
             }
       

@@ -3990,3 +3990,11 @@ int SetRecordStorage(unsigned char value)
 {
     return fSetRecordStorage(value);
 }
+//add by wbb 2014
+int  SetStorageRec(unsigned char value)
+{
+    return fSetStorageRec(value);
+}
+
+
+

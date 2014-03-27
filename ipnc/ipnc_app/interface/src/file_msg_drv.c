@@ -3431,17 +3431,21 @@ int fSetChRecEnable(unsigned char value)
 //add by wbb 2014
 int fSetStorageRec(unsigned char value)
 {
-    SysInfo *pSysinfo =(SysInfo*)pShareMem;
+    SysInfo *pSysInfo =(SysInfo*)pShareMem;
     if(pSysInfo == NULL)
 		return -1;
     int videoChl=atoi(strtok(value,"@"));
     char repeatShd=strtok(NULL,"@");
     char infinitRcd=strtok(NULL,"@");
 
-    pSysinfo->storage_config[videoChl].nScheduleInfiniteEnable=infinitRcd;
-    pSysinfo->storage_config[videoChl].nScheduleRepeatEnable=repeatShd; 
+
+    printf("videoChl=%d,repeatShd=%c,infinitRcd=%c",videoChl,repeatShd,infinitRcd);
+
+    pSysInfo->storage_config[videoChl].nScheduleInfiniteEnable=infinitRcd;
+    pSysInfo->storage_config[videoChl].nScheduleRepeatEnable=repeatShd; 
 
     return SetSysInfo(0);
+    printf("fsetstorage 0ver\n");
 }
 
 

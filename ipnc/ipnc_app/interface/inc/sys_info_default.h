@@ -730,10 +730,42 @@ static SysInfo SysInfoDefault =
                 PRESET_NOTE_DEFAULT
             },
 	},
-
-    
+	
+      {
+        {
+            0,
+            52,
+            0,
+            SCHEDULE_DEFAULT,
+            0,
+            0            
+         },
+        {
+            0,
+            52,
+            0,
+            SCHEDULE_DEFAULT,
+            0,
+            0 
+        },
+        {
+            0,
+            52,
+            0,
+            SCHEDULE_DEFAULT,
+            0,
+            0             
+        },
+        {
+            0,
+            52,
+            0,
+            SCHEDULE_DEFAULT,
+            0,
+            0             
+        },
+      },
 	CUR_LOG_DEFAULT,
-
 	{
 	    {
                     DEFAULT_MODBUS_RS,

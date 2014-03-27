@@ -2531,7 +2531,7 @@ int DelSchedule(int bEnable)
     if (bEnable == 1)
     {
         for (i = 0; i < SCHDULE_NUM; i++)
-            if (fSetSchedule(i, &schedule, 0, 0))
+            if (fSetSchedule(0,i, &schedule, 0, 0))
             {
                 return  - 1;
             }
