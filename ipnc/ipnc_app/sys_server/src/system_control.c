@@ -2441,7 +2441,7 @@ int SetSchedule(void *buf, int length)
         return  - 1;
     }
     //add one parameter 2014
-    if (sscanf(buf, "%1d%02d%1d%02d%02d%02d%02d%02d%02d%02d", &videochl,&index, &bStatus,  &nDay, &nSHour, &nSMin, &nSSec, &nDHour, &nDMin, &nDSec) != 9)
+    if (sscanf(buf, "%1d%02d%1d%02d%02d%02d%02d%02d%02d%02d", &videochl,&index, &bStatus,  &nDay, &nSHour, &nSMin, &nSSec, &nDHour, &nDMin, &nDSec) != 10)
     {
         return  - 1;
     }
@@ -2455,7 +2455,7 @@ int SetSchedule(void *buf, int length)
     schedule.tDuration.nMin = nDMin;
     schedule.tDuration.nSec = nDSec;
 
-    //printf("SCHEDULE DEBUG VALUE: index: %d status: %d day: %d hr: %d min: %d sec: %d hr: %d min: %d sec: %d\n",
+     //intf("SCHEDULE DEBUG VALUE: index: %d status: %d day: %d hr: %d min: %d sec: %d hr: %d min: %d sec: %d\n",
     //    index, bStatus,    nDay, nSHour, nSMin, nSSec,    nDHour, nDMin, nDSec);
 
     //printf("SCHEDULE DEBUG VALUE: CurYear: %d CurMon: %d CurDay: %d\n",

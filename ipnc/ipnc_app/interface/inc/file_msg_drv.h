@@ -290,6 +290,7 @@ int fSetPlcChl(unsigned char *value);
 
 int fSetChipConfig(unsigned char value);
 int fSetChRecEnable(unsigned char value);//add by sxh
+int fSetStorageRec(unsigned char *value);  //add by wbb 2014
 
 /** @} */
 #endif /* _FILE_MSG_DRV_H_ */

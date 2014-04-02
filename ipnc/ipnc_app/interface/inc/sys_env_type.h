@@ -555,9 +555,9 @@ typedef struct LogEntry_t{
 
 //add by wbb 2014
 typedef struct Storage_Config_Data{
-	__u8		    nScheduleRepeatEnable; 			///< schedule record repeat enable/disable
-	__u8			nScheduleNumWeeks;   		    ///< scheduled number of weeks
-	__u8		    nScheduleInfiniteEnable; 		///< schedule infinite times enable/disable
+	int		    nScheduleRepeatEnable; 			///< schedule record repeat enable/disable
+	int			nScheduleNumWeeks;   		    ///< scheduled number of weeks
+	int		    nScheduleInfiniteEnable; 		///< schedule infinite times enable/disable
 	Schedule_t		aSchedules[SCHDULE_NUM];		///< schedule data
 	int				schedCurDay;
 	int				schedCurYear;      

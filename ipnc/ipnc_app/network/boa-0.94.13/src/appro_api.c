@@ -4492,21 +4492,21 @@ static int get_schedulechl(request *req, COMMAND_ARGUMENT *argm)
 		return -1;
     for(i = 0; i < SCHDULE_NUM; i ++){
 			pSchedule = &(pSysInfo->storage_config[videoChl].aSchedules[i]);
-			req->buffer_end  += sprintf(req_bufptr(req)+ req->buffer_end ,
+                    printf("pSchedule ( %s )\n",pSchedule );
+			req->buffer_end  += sprintf(req_bufptr(req) ,
 				"%2d%d%02d%02d%02d%02d%02d%02d%02d\n",i,
 				pSchedule -> bStatus, pSchedule -> nDay,
 				pSchedule -> tStart.nHour, pSchedule -> tStart.nMin,
 				pSchedule -> tStart.nSec, pSchedule -> tDuration.nHour,
 				pSchedule -> tDuration.nMin, pSchedule -> tDuration.nSec);
     }
+     printf("pSchedule ( %s )\n",req->buffer);
     return 0;
 }    
  
 void get_schedule(request *req, COMMAND_ARGUMENT *argm)
 {
-    #if DEBUG==1
-    printf("get_plc_serial, value=%s\n",argm->value);
-    #endif
+    printf("get_schedule value=%s\n",argm->value);
     
     do
     {

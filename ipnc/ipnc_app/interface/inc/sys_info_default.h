@@ -738,7 +738,7 @@ static SysInfo SysInfoDefault =
             0,
             SCHEDULE_DEFAULT,
             0,
-            0            
+            0,            
          },
         {
             0,
@@ -746,7 +746,7 @@ static SysInfo SysInfoDefault =
             0,
             SCHEDULE_DEFAULT,
             0,
-            0 
+            0, 
         },
         {
             0,
@@ -754,7 +754,7 @@ static SysInfo SysInfoDefault =
             0,
             SCHEDULE_DEFAULT,
             0,
-            0             
+            0,             
         },
         {
             0,
@@ -762,7 +762,7 @@ static SysInfo SysInfoDefault =
             0,
             SCHEDULE_DEFAULT,
             0,
-            0             
+            0,             
         },
       },
 	CUR_LOG_DEFAULT,

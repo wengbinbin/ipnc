@@ -234,7 +234,7 @@ int SetTimePosition(unsigned char value);
 int SetAudioAlarmLevel(unsigned char value);
 int SetAlarmStorage(unsigned char value);
 int SetRecordStorage(unsigned char value);
-int  SetStorageRec(unsigned char value);   //add by wbb 2014
+int  SetStorageRec(unsigned char *value);   //add by wbb 2014
 int SetEncryptVideo(unsigned char value);
 int SetAlarmEnable(unsigned char value);
 int Avs_SetExtAlarm(unsigned char value);
