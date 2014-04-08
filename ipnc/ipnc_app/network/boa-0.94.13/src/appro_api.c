@@ -4490,7 +4490,7 @@ static int get_schedulechl(request *req, COMMAND_ARGUMENT *argm)
     int i;
     if(pSysInfo == NULL)
 		return -1;
-    for(i = 0; i < SCHDULE_NUM; i ++){
+    for(i = 0; i < SCHDULE_NUM-1; i ++){
 			pSchedule = &(pSysInfo->storage_config[videoChl].aSchedules[i]);
                     printf("pSchedule ( %s )\n",pSchedule );
 			req->buffer_end  += sprintf(req_bufptr(req) ,

@@ -558,7 +558,7 @@ typedef struct Storage_Config_Data{
 	int		    nScheduleRepeatEnable; 			///< schedule record repeat enable/disable
 	int			nScheduleNumWeeks;   		    ///< scheduled number of weeks
 	int		    nScheduleInfiniteEnable; 		///< schedule infinite times enable/disable
-	Schedule_t		aSchedules[SCHDULE_NUM];		///< schedule data
+	Schedule_t		aSchedules[SCHDULE_NUM-1];		///< schedule data
 	int				schedCurDay;
 	int				schedCurYear;      
 }Storage_Config_Data;

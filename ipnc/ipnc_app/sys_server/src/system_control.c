@@ -2455,11 +2455,11 @@ int SetSchedule(void *buf, int length)
     schedule.tDuration.nMin = nDMin;
     schedule.tDuration.nSec = nDSec;
 
-     //intf("SCHEDULE DEBUG VALUE: index: %d status: %d day: %d hr: %d min: %d sec: %d hr: %d min: %d sec: %d\n",
-    //    index, bStatus,    nDay, nSHour, nSMin, nSSec,    nDHour, nDMin, nDSec);
+     printf("SCHEDULE DEBUG VALUE:videochl:%d: index: %d status: %d day: %d hr: %d min: %d sec: %d hr: %d min: %d sec: %d\n",
+        videochl,index, bStatus,    nDay, nSHour, nSMin, nSSec,    nDHour, nDMin, nDSec);
 
-    //printf("SCHEDULE DEBUG VALUE: CurYear: %d CurMon: %d CurDay: %d\n",
-    //    pCurTime->tm_year, pCurTime->tm_mon, pCurTime->tm_yday);
+    printf("SCHEDULE DEBUG VALUE: CurYear: %d CurMon: %d CurDay: %d\n",
+        pCurTime->tm_year, pCurTime->tm_mon, pCurTime->tm_yday);
 
     return fSetSchedule(videochl,index, &schedule, pCurTime->tm_yday, pCurTime->tm_year);
 }
