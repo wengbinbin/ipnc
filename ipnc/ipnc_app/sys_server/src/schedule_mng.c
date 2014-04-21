@@ -13,6 +13,7 @@
  * @file schedule_mng.c
  * @brief Schedule manager.
  */
+ #include<math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +35,7 @@
 #include <sys_env_type.h>
 #include <sem_util.h>
 
+#define _SCHED_DEBUG
 #ifdef _SCHED_DEBUG
 #define __D(fmt, args...) fprintf(stderr,  fmt, ## args)
 #else
@@ -297,82 +299,54 @@ void *scheduleThrFxn(void *args)
     SysInfo *pSysInfo = (SysInfo*)args;
     int nSleepDuration = 1;
     int index = 0, count = 0;
-    /* Schd_Status = 0: No schedule ; others : current recording destination*/
-    int Schd_Status = 0, tCurStatus;
-    Schedule_t *pSched_info = &pSysInfo->lan_config.aSchedules[0];
-    int schedDay = 0, schedYear = 0, schedWeeks = 0, schedInfinite = 0;
-
-    schedInfinite = pSysInfo->lan_config.nScheduleInfiniteEnable;
-    schedDay = pSysInfo->lan_config.schedCurDay;
-    schedYear = pSysInfo->lan_config.schedCurYear;
-    schedWeeks = pSysInfo->lan_config.nScheduleNumWeeks;
+    int i,j;
+    int sum;
+    int isinfinite[4]={0,0,0,0};
+    int isrecord[4]={0,0,0,0};
+    int isrange[4]={0,0,0,0};
 
     sleep(nSleepDuration);
+    printf("scheduleThrFxn beging");
     while (IsFileThreadQuit() == 0)
     {
-        //sleep(nSleepDuration);
-        if (IsSchedulePause())
+        printf("scheduleThrFxn beging while\n");
+        for(i=0;i<4;i++)
         {
-            index =  - 1;
+            if(isinfinite[i]!=pSysInfo->storage_config[i].nScheduleInfiniteEnable)
+            {
+                for(j=0;j<4;++j)
+                {
+                    isinfinite[j]=pSysInfo->storage_config[j].nScheduleInfiniteEnable;
+                    sum+=isinfinite[j]*(int)(pow(2.0,j));
+                    SetChRecEnableMsg(sum);//?
+                    printf("SetChRecEnableMsg is success\n");
+                    printf("sum=%d,%c\n",sum,sum);
+                }
+                break;
+            }
         }
-        else
+        sleep(nSleepDuration);
+        for(i=0;i<4;++i)
         {
+            if(isrecord[i]==0) continue;
+            Schedule_t *pSched_info = &pSysInfo->storage_config[i].aSchedules[0];
+            int schedDay = 0, schedYear = 0, schedWeeks = 52, schedInfinite = 0;
+            schedInfinite = pSysInfo->storage_config[i].nScheduleInfiniteEnable;
+            schedDay = pSysInfo->storage_config[i].schedCurDay;
+            schedYear = pSysInfo->storage_config[i].schedCurYear;
+            schedWeeks = pSysInfo->storage_config[i].nScheduleNumWeeks;            
             index = schedCheckTimeRange(pSched_info, schedDay, schedYear, schedWeeks, schedInfinite);
-            tCurStatus = GetRecordDst(pSysInfo);
-        }
-        if (index !=  - 1)
-        {
-            /* Have a schedule */
-            if (pSysInfo->sdcard_config.sdinsert == 0)
+//            tCurStatus = GetRecordDst(pSysInfo);
+            printf("index=%d\n",index);
+            if (index != isrange[i])
             {
-                /* When in schedule, send one message per 10 secs. */
-                if (count == 0)
-                {
-                    SendAlarmSchedule(index);
-                    count = 9;
-                }
-                else
-                {
-                    count--;
-                }
+                isrange[i]=index;
+                sum+=(int)(pow(2.0,i));
+                printf("sum=%d,%c\n",sum,sum);
+                SetChRecEnableMsg(sum);//?
+                printf("sum=%d,%c\n",sum,sum);
+                sleep(nSleepDuration);
             }
-            else
-            {
-                /* AVI no stop case */
-                if (tCurStatus != 0)
-                {
-                    /* Any record destination was seleced */
-                    if (Schd_Status == 0)
-                    {
-                        /* First time start */
-                        SendAlarmSchedule(index);
-                    }
-                    else if (Schd_Status != tCurStatus)
-                    {
-                        __D("Option changed");
-                        SendAlarmScheduleEnd();
-                        SendAlarmSchedule(index);
-                    }
-                }
-                else
-                {
-                    if (Schd_Status != 0)
-                    {
-                        /* All option was canceled */
-                        SendAlarmScheduleEnd();
-                    }
-                }
-            }
-            Schd_Status = tCurStatus;
-        }
-        else
-        {
-            if (Schd_Status != 0)
-            {
-                SendAlarmScheduleEnd();
-            }
-            Schd_Status = 0;
-            count = 0;
         }
         sleep(nSleepDuration);
     }
@@ -394,6 +368,8 @@ int ScheduleMngInit(SysInfo *pSysInfo)
     {
         return  - 1;
     }
+    scheduleThrFxn(pSysInfo);
+   /*
     if (pthread_create(&gScheduleThread, NULL, scheduleThrFxn, pSysInfo))
     {
         DestroySem(gSemSchedule);
@@ -401,5 +377,6 @@ int ScheduleMngInit(SysInfo *pSysInfo)
         return  - 1;
     }
     __D("scheduleThread created\n");
+    */
     return 0;
 }

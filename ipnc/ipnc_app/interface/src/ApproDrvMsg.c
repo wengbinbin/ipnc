@@ -454,6 +454,7 @@ int SendFaceDetectMsg(FaceDetectParam* faceParam)
 	ptr = (void*)&msgbuf.mem_info;
 	memcpy(ptr, faceParam, sizeof(FaceDetectParam));
 	SemWait(hndlApproDrvSem);
+        printf("SendFaceDetectMsg\n");
 	msgsnd( qid,&msgbuf,sizeof(msgbuf)-sizeof(long),0);/*send msg1*/
 	msgrcv( qid, &msgbuf,sizeof(msgbuf)-sizeof(long), PROC_MSG_ID, 0);
 	SemRelease(hndlApproDrvSem);

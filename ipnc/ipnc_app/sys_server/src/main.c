@@ -5117,7 +5117,7 @@ int main(int argc, char *argv[])
 {
     int qid, mid, bThreadStatus = 0;
     struct shmid_ds buf;
-    pthread_t tFileMngThread, tAlarmThread, tPTZCtrlThread;
+    pthread_t tFileMngThread, tAlarmThread, tPTZCtrlThread,tScheduleMngInit;
     /* System message queue initial */
     qid = Msg_Init(SYS_MSG_KEY);
     SetSysMsgId(qid);
@@ -5163,6 +5163,13 @@ int main(int argc, char *argv[])
         ERR("PTZCtrlThread create fail\n");
     }
     bThreadStatus |= PTZCTRL_THR_CREATED;
+//add by wbb
+    if (pthread_create(&tScheduleMngInit, NULL, ScheduleMngInit, GetSysInfo()))
+    {
+        IsSysQuit = 1;
+        ERR("ScheduleMngInitcreate fail\n");
+    }
+    printf("Schedule manager init success\n");
 
     plcInit();
     
@@ -5174,13 +5181,16 @@ int main(int argc, char *argv[])
             break;
         }
         printf("SystemInit success\n");
-        if (ScheduleMngInit(GetSysInfo()))
-        {
-            IsSysQuit = 1;
-            break;
-            ERR("Schedule manager init fail\n");
-        }
-        printf("Schedule manager init success\n");
+//
+//        if (ScheduleMngInit(GetSysInfo()))
+//        {
+//            IsSysQuit = 1;
+//            break;
+//            ERR("Schedule manager init fail\n");
+//        }
+//        printf("Schedule manager init success\n");
+    // delete by wbb
+
         /* Process all messages which was sent to system server */
         SysMsgThread(qid, mid);
     }
