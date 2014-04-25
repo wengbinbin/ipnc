@@ -297,14 +297,15 @@ void *scheduleThrFxn(void *args)
 {
     void *status = NULL;
     SysInfo *pSysInfo = (SysInfo*)args;
-    int nSleepDuration = 30;
+    int nSleepDuration = 5;
     int index = 0, count = 0;
     int i,j;
     int sum=0;
     int isinfinite[4]={0,0,0,0};
 //    int isrecord[4]={0,0,0,0};
     int isrange[4]={0,0,0,0};
-    int flagchange=0;
+    int flagchange1=0;
+    int flagchange2=0;
     int ret;
 
     sleep(nSleepDuration);
@@ -320,24 +321,15 @@ void *scheduleThrFxn(void *args)
             {
                     isinfinite[i]=pSysInfo->storage_config[i].nScheduleInfiniteEnable;
 //                    sum+=isinfinite[i]*(int)(pow(2.0,i));
-                    flagchange=1;                   
+                    flagchange1=1;                   
             }
-        }
-        if(flagchange==1){
-            sum=0;
-            for(i=0;i<4;i++) {
-                sum+=isinfinite[i]*(int)(pow(2.0,i));             
-            }
-            ret=SetChRecEnableMsg(sum);
-            printf("ret=%d\n",ret);
-            flagchange=0;
-            printf("SetChRecEnableMsg1 is success\n");
-            printf("sum=%d,%c\n",sum,sum); 
-        }
-        sleep(nSleepDuration);
+        }      
         for(i=0;i<4;++i)
         {
-            if(pSysInfo->storage_config[i].nScheduleRepeatEnable==0) continue;     //if there is no record run next channel;
+            if(pSysInfo->storage_config[i].nScheduleRepeatEnable==0){
+                isrange[i]=0;
+                continue;     //if there is no record run next channel;
+            }
             Schedule_t *pSched_info = &pSysInfo->storage_config[i].aSchedules[0];
             int schedDay = 0, schedYear = 0, schedWeeks = 52, schedInfinite = 0;
             schedInfinite = pSysInfo->storage_config[i].nScheduleInfiniteEnable;
@@ -350,15 +342,28 @@ void *scheduleThrFxn(void *args)
             if (index >=0&&isrange[i]==0)
             {
                 isrange[i]=1;
-                flagchange=1;
+                flagchange2=1;
             }
             if (index <0&&isrange[i]>0)
             {
                 isrange[i]=0;
-                flagchange=1;
+                flagchange2=1;
             }      
         }
-        if(flagchange==1){
+        
+        if(flagchange1==1){
+            sum=0;
+            for(i=0;i<4;i++) {
+                sum+=isinfinite[i]*(int)(pow(2.0,i));             
+            }
+            ret=SetChRecEnableMsg(sum);
+            printf("ret=%d\n",ret);
+            flagchange1=0;
+            printf("SetChRecEnableMsg1 is success\n");
+            printf("sum=%d,%c\n",sum,sum); 
+        }
+        sleep(nSleepDuration);
+        if(flagchange2==1){
             sum=0;
             for(i=0;i<4;i++) {
                 sum+=isinfinite[i]*(int)(pow(2.0,i));  
@@ -366,7 +371,7 @@ void *scheduleThrFxn(void *args)
             }         
             ret=SetChRecEnableMsg(sum);
             printf("ret=%d\n",ret);
-            flagchange=0;
+            flagchange2=0;
             printf("SetChRecEnableMsg2 is success\n");
             printf("sum=%d,%c\n",sum,sum); 
         }
